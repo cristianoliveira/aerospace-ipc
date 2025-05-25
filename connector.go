@@ -80,7 +80,7 @@ func (c *AeroSpaceCustomConnector) Connect() (client.AeroSpaceSocketConn, error)
 
 	if c.ValidateVersion {
 		if err := client.CheckServerVersion(response.ServerVersion); err != nil {
-			return nil, err
+			return client, err
 		}
 	}
 

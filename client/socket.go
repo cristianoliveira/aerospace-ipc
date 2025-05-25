@@ -85,17 +85,13 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) err
 	if err != nil {
 		return fmt.Errorf("failed to parse major version from %s\n%w", serverVersion, err)
 	}
-	intMinor, err := strconv.Atoi(versionParts[1])
-	if err != nil {
-		return fmt.Errorf("failed to parse minor version from %s\n%w", serverVersion, err)
-	}
 
 	if intMajor > c.MinMajorVersion {
-		return fmt.Errorf("AeroSpace server major version %s is greater than the minimum required %d.%d.x", serverVersion, c.MinMajorVersion, c.MinMinorVersion)
+		return fmt.Errorf("[VERSION-MISMATCH] AeroSpace server major version %s is greater than the minimum required %d.%d.x", serverVersion, c.MinMajorVersion, c.MinMinorVersion)
 	}
 
-	if intMajor >= c.MinMajorVersion && intMinor > c.MinMinorVersion {
-		return fmt.Errorf("AeroSpace server minor version %s is greater than the minimum required %d.%d.x", serverVersion, c.MinMajorVersion, c.MinMinorVersion)
+	if intMajor < c.MinMajorVersion {
+		return fmt.Errorf("[VERSION-MISMATCH] AeroSpace server major version %s is less than the minimum required %d.%d.x", serverVersion, c.MinMajorVersion, c.MinMinorVersion)
 	}
 
 	return nil

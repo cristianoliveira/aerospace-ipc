@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/cristianoliveira/aerospace-ipc"
 )
@@ -17,7 +18,11 @@ func main() {
 		},
 	)
 	if err != nil {
-		log.Fatalf("Failed to connect: %v", err)
+		if strings.Contains(err.Error(), "[VERSION-MISMATCH]") {
+			fmt.Printf("[WARN] %s\n", err)
+		} else {
+			log.Fatalf("Failed to connect: %v", err)
+		}
 	}
 	defer client.CloseConnection()
 
