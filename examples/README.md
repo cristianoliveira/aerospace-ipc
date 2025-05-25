@@ -2,10 +2,6 @@
 
 This directory contains example applications demonstrating how to use the AeroSpace IPC library to interact with the AeroSpace window manager.
 
-## Overview
-
-The examples provided here showcase various functionalities of the AeroSpace IPC library, such as connecting to the AeroSpace window manager, retrieving window information, and managing workspaces.
-
 ## Using Examples as Templates
 
 These examples serve as templates for your own extensions. You can modify them to suit your specific needs or use them as a starting point for developing new features.
