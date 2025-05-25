@@ -7,6 +7,7 @@ import (
 	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
 
+// ErrVersionMismatch indicates that the server version does not match the minimum required version.
 var ErrVersionMismatch = exceptions.ErrVersion
 
 // AeroSpaceClient defines the interface for interacting with AeroSpaceWM.

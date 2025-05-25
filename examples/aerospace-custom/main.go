@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/cristianoliveira/aerospace-ipc"
-	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
 
 func main() {
@@ -22,7 +21,7 @@ func main() {
 		},
 	)
 	if err != nil {
-		if errors.Is(err, exceptions.ErrVersionMismatch) {
+		if errors.Is(err, aerospace.ErrVersionMismatch) {
 			fmt.Printf("[WARN] %s\n", err)
 		} else {
 			log.Fatalf("Failed to connect: %v", err)
