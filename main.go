@@ -1,4 +1,4 @@
-package aerospacecli
+package aerospace
 
 import (
 	"fmt"
