@@ -12,5 +12,7 @@ const (
 	// AerspaceSocketClientVersion is the minimum version of the AeroSpace socket client
 	//
 	// Minimum version of the AeroSpace socket client required for compatibility
-	AeroSpaceSocketClientVersion string = "0.15.2-Beta"
+	// Default: `0.15.2`
+	AeroSpaceSocketClientMajor int = 0
+	AeroSpaceSocketClientMinor int = 15
 )

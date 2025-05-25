@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -46,9 +47,10 @@ type AeroSpaceSocketConn interface {
 
 // AeroSpaceSocketConnection implements the AeroSpaceSocketConn interface.
 type AeroSpaceSocketConnection struct {
-	SocketPath          string
-	MinAerospaceVersion string
-	Conn                *net.Conn
+	SocketPath      string
+	MinMajorVersion int
+	MinMinorVersion int
+	Conn            *net.Conn
 }
 
 func (c *AeroSpaceSocketConnection) GetSocketPath() (string, error) {
@@ -77,6 +79,23 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) err
 	versionParts := strings.Split(parts[0], ".")
 	if len(versionParts) < 2 {
 		fmt.Printf("[WARN] Invalid server version format: %s\n", serverVersion)
+	}
+
+	intMajor, err := strconv.Atoi(versionParts[0])
+	if err != nil {
+		return fmt.Errorf("failed to parse major version from %s\n%w", serverVersion, err)
+	}
+	intMinor, err := strconv.Atoi(versionParts[1])
+	if err != nil {
+		return fmt.Errorf("failed to parse minor version from %s\n%w", serverVersion, err)
+	}
+
+	if intMajor < c.MinMajorVersion {
+		return fmt.Errorf("AeroSpace server major version %s is lower than the minimum required %d.%d.x", serverVersion, c.MinMajorVersion, c.MinMinorVersion)
+	}
+
+	if intMajor >= c.MinMajorVersion && intMinor < c.MinMinorVersion {
+		fmt.Printf("[WARN] AeroSpace server minor version %s is lower than the minimum required version %d.%d.x\n", serverVersion, c.MinMajorVersion, c.MinMinorVersion)
 	}
 
 	return nil
@@ -124,11 +143,6 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 
 	if response.StdErr != "" {
 		return nil, fmt.Errorf("command error\n %s", response.StdErr)
-	}
-
-	err = c.CheckServerVersion(response.ServerVersion)
-	if err != nil {
-		return nil, err
 	}
 
 	return &response, nil

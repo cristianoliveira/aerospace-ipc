@@ -1,5 +1,5 @@
 {
-  description = "aerospace-marks: I3wm like marks feature";
+  description = "aerospace-ipc: Socket Client for AeroSpace WM";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";

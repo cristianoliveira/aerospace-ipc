@@ -38,9 +38,10 @@ func (c *AeroSpaceDefaultConnector) Connect() (client.AeroSpaceSocketConn, error
 	}
 
 	client := &client.AeroSpaceSocketConnection{
-		MinAerospaceVersion: constants.AeroSpaceSocketClientVersion,
-		Conn:                &conn,
-		SocketPath:          socketPath,
+		MinMajorVersion: constants.AeroSpaceSocketClientMajor,
+		MinMinorVersion: constants.AeroSpaceSocketClientMinor,
+		Conn:            &conn,
+		SocketPath:      socketPath,
 	}
 
 	return client, nil
@@ -68,9 +69,21 @@ func (c *AeroSpaceCustomConnector) Connect() (client.AeroSpaceSocketConn, error)
 	}
 
 	client := &client.AeroSpaceSocketConnection{
-		MinAerospaceVersion: constants.AeroSpaceSocketClientVersion,
-		Conn:                &conn,
-		SocketPath:          c.SocketPath,
+		MinMajorVersion: constants.AeroSpaceSocketClientMajor,
+		MinMinorVersion: constants.AeroSpaceSocketClientMinor,
+		Conn:            &conn,
+		SocketPath:      c.SocketPath,
+	}
+
+	response, err := client.SendCommand("config", []string{"--config-path"})
+	if err != nil {
+		return nil, fmt.Errorf("failed communicate with server\n%w", err)
+	}
+
+	if c.ValidateVersion {
+		if err := client.CheckServerVersion(response.ServerVersion); err != nil {
+			return nil, err
+		}
 	}
 
 	return client, nil
