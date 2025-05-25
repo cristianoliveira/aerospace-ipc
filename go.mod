@@ -1,3 +1,3 @@
-module github.com/cristianoliveira/aerospace-ipc/v1
+module github.com/cristianoliveira/aerospace-ipc
 
 go 1.24.2
