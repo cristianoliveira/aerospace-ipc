@@ -6,6 +6,8 @@ import (
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
 
 // Command represents the JSON structure for AeroSpace socket commands.
@@ -87,11 +89,12 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) err
 	}
 
 	if intMajor > c.MinMajorVersion {
-		return fmt.Errorf("[VERSION-MISMATCH] AeroSpace server major version %s is greater than the minimum required %d.%d.x", serverVersion, c.MinMajorVersion, c.MinMinorVersion)
-	}
-
-	if intMajor < c.MinMajorVersion {
-		return fmt.Errorf("[VERSION-MISMATCH] AeroSpace server major version %s is less than the minimum required %d.%d.x", serverVersion, c.MinMajorVersion, c.MinMinorVersion)
+		versionJoined := strings.Join(versionParts, ".")
+		return exceptions.NewErrVersionMismatch(
+			c.MinMajorVersion,
+			c.MinMinorVersion,
+			versionJoined,
+		)
 	}
 
 	return nil

@@ -4,7 +4,10 @@ import (
 	"fmt"
 
 	"github.com/cristianoliveira/aerospace-ipc/client"
+	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
+
+var ErrVersionMismatch = exceptions.ErrVersion
 
 // AeroSpaceClient defines the interface for interacting with AeroSpaceWM.
 type AeroSpaceClient interface {

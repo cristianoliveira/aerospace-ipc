@@ -1,4 +1,4 @@
-# aerospace-ipc
+# aerospace-ipcIndex out of range: %d", index)
 
 A Go library for interacting with the AeroSpace window manager via Unix socket.
 
@@ -29,13 +29,19 @@ go get -u github.com/cristianoliveira/aerospace-ipc
 To use the library, import it into your Go project and create a new AeroSpace connection:
 
 ```go
-import aerospacecli "github.com/cristianoliveira/aerospace-ipc"
+import (
+	"errors"
+	"fmt"
+	"log"
+
+    aerospacecli "github.com/cristianoliveira/aerospace-ipc"
+)
 
 func main() {
     client, err := aerospacecli.NewAeroSpaceConnection()
     if err != nil {
         // Your choice here, the client will return but there might be incompatibilities
-        if strings.Contains(err.Error(), "[VERSION-MISMATCH]") {
+        if error.Is(err, aerospacecli.ErrVersionMismatch) {
             fmt.Printf("[WARN] %s\n", err)
         } else {
             log.Fatalf("Failed to connect: %v", err)

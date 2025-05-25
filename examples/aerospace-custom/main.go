@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/cristianoliveira/aerospace-ipc"
+	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
 
 func main() {
@@ -20,7 +22,7 @@ func main() {
 		},
 	)
 	if err != nil {
-		if strings.Contains(err.Error(), "[VERSION-MISMATCH]") {
+		if errors.Is(err, exceptions.ErrVersionMismatch) {
 			fmt.Printf("[WARN] %s\n", err)
 		} else {
 			log.Fatalf("Failed to connect: %v", err)
