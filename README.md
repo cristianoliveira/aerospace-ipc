@@ -35,11 +35,11 @@ func main() {
     client, err := aerospacecli.NewAeroSpaceConnection()
     if err != nil {
         // Your choice here, the client will return but there might be incompatibilities
-		if strings.Contains(err.Error(), "[VERSION-MISMATCH]") {
-			fmt.Printf("[WARN] %s\n", err)
-		} else {
-			log.Fatalf("Failed to connect: %v", err)
-		}
+        if strings.Contains(err.Error(), "[VERSION-MISMATCH]") {
+            fmt.Printf("[WARN] %s\n", err)
+        } else {
+            log.Fatalf("Failed to connect: %v", err)
+        }
     }
     defer client.CloseConnection()
 
