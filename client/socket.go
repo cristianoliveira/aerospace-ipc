@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"strings"
 )
 
 // Command represents the JSON structure for AeroSpace socket commands.
@@ -15,7 +16,7 @@ type Command struct {
 
 // Response represents the JSON structure from AeroSpace socket response.
 type Response struct {
-	ServerVersion string `json:"serverVersion"`
+	ServerVersion string `json:"serverVersion"` // Fornat: "0.0.1-Beta"
 	StdErr        string `json:"stderr"`
 	StdOut        string `json:"stdout"`
 	ExitCode      int32  `json:"exitCode"`
@@ -38,6 +39,9 @@ type AeroSpaceSocketConn interface {
 
 	// GetSocketPath returns the socket path for the AeroSpace connection.
 	GetSocketPath() (string, error)
+
+	// CheckServerVersion validates the version of the AeroSpace server.
+	CheckServerVersion(serverVersion string) error
 }
 
 // AeroSpaceSocketConnection implements the AeroSpaceSocketConn interface.
@@ -62,6 +66,19 @@ func (c *AeroSpaceSocketConnection) CloseConnection() error {
 			return fmt.Errorf("failed to close connection\n %w", err)
 		}
 	}
+	return nil
+}
+
+func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) error {
+	if serverVersion == "" {
+		return fmt.Errorf("server version is empty")
+	}
+	parts := strings.Split(serverVersion, "-")
+	versionParts := strings.Split(parts[0], ".")
+	if len(versionParts) < 2 {
+		fmt.Printf("[WARN] Invalid server version format: %s\n", serverVersion)
+	}
+
 	return nil
 }
 
@@ -107,6 +124,11 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 
 	if response.StdErr != "" {
 		return nil, fmt.Errorf("command error\n %s", response.StdErr)
+	}
+
+	err = c.CheckServerVersion(response.ServerVersion)
+	if err != nil {
+		return nil, err
 	}
 
 	return &response, nil

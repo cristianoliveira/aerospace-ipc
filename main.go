@@ -122,3 +122,35 @@ func NewAeroSpaceConnection() (*AeroSpaceWM, error) {
 
 	return client, nil
 }
+
+type AeroSpaceCustomConnectionOpts struct {
+	// SocketPath is the custom socket path for the AeroSpace connection.
+	SocketPath string
+	// ValidateVersion is the version to validate against the AeroSpace server.
+	ValidateVersion bool
+}
+
+// NewAeroSpaceCustomConnection creates a new AeroSpaceClient with a custom socket path.
+func NewAeroSpaceCustomConnection(opts AeroSpaceCustomConnectionOpts) (*AeroSpaceWM, error) {
+	if opts.SocketPath == "" {
+		return nil, fmt.Errorf("socket path cannot be empty")
+	}
+
+	connector := &AeroSpaceCustomConnector{
+		MinAerospaceVersion: "0.15.2-Beta",
+		SocketPath:          opts.SocketPath,
+		ValidateVersion:     opts.ValidateVersion,
+	}
+
+	conn, err := connector.Connect()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
+	}
+
+	client := &AeroSpaceWM{
+		MinAerospaceVersion: "0.15.2-Beta",
+		Conn:                conn,
+	}
+
+	return client, nil
+}

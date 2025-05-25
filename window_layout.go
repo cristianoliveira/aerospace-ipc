@@ -11,5 +11,6 @@ func (a *AeroSpaceWM) SetLayout(windowID int, layout string) error {
 		fmt.Println("Error setting layout:", res, err)
 		return fmt.Errorf("failed to set layout for window %d: %w", windowID, err)
 	}
+
 	return nil
 }

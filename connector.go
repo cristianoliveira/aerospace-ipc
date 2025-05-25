@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/cristianoliveira/aerospace-ipc/client"
+	"github.com/cristianoliveira/aerospace-ipc/internal/constants"
 )
 
 // Connector should return AeroSpaceConnectiono
@@ -37,9 +38,39 @@ func (c *AeroSpaceDefaultConnector) Connect() (client.AeroSpaceSocketConn, error
 	}
 
 	client := &client.AeroSpaceSocketConnection{
-		MinAerospaceVersion: AeroSpaceSocketClientVersion,
+		MinAerospaceVersion: constants.AeroSpaceSocketClientVersion,
 		Conn:                &conn,
 		SocketPath:          socketPath,
+	}
+
+	return client, nil
+}
+
+// AeroSpaceCustomConnector is the default implementation of AeroSpaceConnector.
+//
+// In most cases, you will use this connector to connect to the AeroSpace socket.
+type AeroSpaceCustomConnector struct {
+	// SocketPath is the custom socket path for the AeroSpace connection.
+	SocketPath string
+	// MinAerospaceVersion is the minimum version of the AeroSpace server that this connector supports.
+	MinAerospaceVersion string
+	// ValidateVersion indicates whether to validate the version of the AeroSpace server.
+	ValidateVersion bool
+}
+
+func (c *AeroSpaceCustomConnector) Connect() (client.AeroSpaceSocketConn, error) {
+	if c.SocketPath == "" {
+		return nil, fmt.Errorf("socket path cannot be empty")
+	}
+	conn, err := net.Dial("unix", c.SocketPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
+	}
+
+	client := &client.AeroSpaceSocketConnection{
+		MinAerospaceVersion: constants.AeroSpaceSocketClientVersion,
+		Conn:                &conn,
+		SocketPath:          c.SocketPath,
 	}
 
 	return client, nil

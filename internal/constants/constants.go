@@ -1,4 +1,4 @@
-package aerospace
+package constants
 
 const (
 	// Environment variables names constants
@@ -6,11 +6,6 @@ const (
 	// EnvAeroSpaceSock is the environment variable for the AeroSpace socket path
 	//  Default: `/tmp/bobko.aerospace-$USER.sock`
 	EnvAeroSpaceSock string = "AEROSPACESOCK"
-
-	// EnvWarnVersionMismatch is the environment variable for warning about
-	// socket version mismatch
-	//  Default: "true" (enabled by default, set to "false" to disable warnings about version mismatch
-	EnvAeroSpaceVersion string = "AEROSPACE_WARN_VERSION_MISMATCH"
 
 	// Other constants
 

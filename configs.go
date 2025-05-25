@@ -3,6 +3,8 @@ package aerospace
 import (
 	"fmt"
 	"os"
+
+	"github.com/cristianoliveira/aerospace-ipc/internal/constants"
 )
 
 // GetSocketPath returns the socket path
@@ -15,10 +17,9 @@ import (
 // Returns the socket path or an error if the path does not exist
 func GetSocketPath() (string, error) {
 	socketPath := fmt.Sprintf("/tmp/bobko.%s-%s.sock", "aerospace", os.Getenv("USER"))
-	if os.Getenv(EnvAeroSpaceSock) != "" {
-		socketPath = os.Getenv(EnvAeroSpaceSock)
-	} else {
-		socketPath = fmt.Sprintf("/tmp/bobko.%s-%s.sock", "aerospace", os.Getenv("USER"))
+	socketPathEnv := os.Getenv(constants.EnvAeroSpaceSock)
+	if socketPathEnv != "" {
+		socketPath = socketPathEnv
 	}
 
 	if _, err := os.Stat(socketPath); os.IsNotExist(err) {
