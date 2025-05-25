@@ -1,6 +1,6 @@
 # aerospace-ls
 
-A simple example cli for listing all windoes from Aerospace WM.
+A simple example cli for listing all windows from Aerospace WM.
 
 # Usage
 
