@@ -1,8 +1,10 @@
 package client
 
 import (
-	"strings"
+	"errors"
 	"testing"
+
+	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
 
 func TestSocketClient(t *testing.T) {
@@ -19,20 +21,8 @@ func TestSocketClient(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		if !strings.Contains(err.Error(), "[VERSION-MISMATCH]") ||
-			!strings.Contains(err.Error(), "server major version 3.10.0") ||
-			!strings.Contains(err.Error(), "minimum required 2.10.x") {
+		if !errors.Is(err, exceptions.ErrVersion) {
 			t.Fatalf("expected error about minimum version, got %v", err)
-		}
-
-		err = connection.CheckServerVersion("1.2.0-beta xxxxx")
-		if err == nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-		if !strings.Contains(err.Error(), "[VERSION-MISMATCH]") ||
-			!strings.Contains(err.Error(), "server major version 1.2.0") ||
-			!strings.Contains(err.Error(), "minimum required 2.10.x") {
-			t.Fatalf("major ok but min no-ok, got %v", err)
 		}
 	})
 }

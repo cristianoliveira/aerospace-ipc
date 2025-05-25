@@ -14,6 +14,10 @@ The socket is typically located at `/tmp/\(aeroSpaceAppId)-\(unixUserName).sock`
 - Send raw commands and receive responses in pure JSON format.
 - Manage windows and workspaces programmatically.
 
+## When to use this library
+
+If you are creating an extension that relies a lot on querying the AeroSpace WM. Because it uses IPC (Inter-Process Communication) to communicate directly with the AeroSpace Unix socket, just like the built-in AeroSpace CLI. It allows you to avoid repeated process spawning. This approach offers lower latency and better efficiency.
+
 ## Installation
 
 To use this library in your Go project, add it as a dependency:
