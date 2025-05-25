@@ -33,7 +33,7 @@ func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceSocketConn, error) {
 	}
 
 	client := &AeroSpaceSocketConnection{
-		MinAerospaceVersion: "0.15.2-Beta",
+		MinAerospaceVersion: AeroSpaceSocketClientVersion,
 		Conn:                &conn,
 		socketPath:          socketPath,
 	}
@@ -41,4 +41,21 @@ func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceSocketConn, error) {
 	return client, nil
 }
 
-var DefaultConnector AeroSpaceConnector = &AeroSpaceDefaultConnector{}
+var defaultConnector AeroSpaceConnector = &AeroSpaceDefaultConnector{}
+
+// SetDefaultConnector sets the default AeroSpaceConnector.
+// This allows you to set a custom connector if needed, for testing or other purposes.
+func SetDefaultConnector(connector AeroSpaceConnector) {
+	if connector == nil {
+		panic("ASSERTION: Default connector cannot be nil")
+	}
+	defaultConnector = connector
+}
+
+// GetDefaultConnector returns the default AeroSpaceConnector.
+func GetDefaultConnector() AeroSpaceConnector {
+	if defaultConnector == nil {
+		panic("ASSERTION: Default connector is not initialized")
+	}
+	return defaultConnector
+}

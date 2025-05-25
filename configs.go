@@ -5,14 +5,6 @@ import (
 	"os"
 )
 
-const (
-  // Environment variables
-
-  // EnvAeroSpaceSock is the environment variable for the AeroSpace socket path
-  //  Default: `/tmp/bobko.aerospace-$USER.sock`
-  EnvAeroSpaceSock string = "AEROSPACESOCK"
-)
-
 // GetSocketPath returns the socket path
 //
 // It checks for environment variable AEROSPACESOCK or uses the default socket path.

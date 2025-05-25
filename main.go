@@ -105,7 +105,7 @@ func (a *AeroSpaceWM) CloseConnection() error {
 //
 // Returns an AeroSpaceWM client or an error if the connection fails.
 func NewAeroSpaceConnection() (*AeroSpaceWM, error) {
-	conn, err := DefaultConnector.Connect()
+	conn, err := GetDefaultConnector().Connect()
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
 	}
