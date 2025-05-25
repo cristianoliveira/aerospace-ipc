@@ -8,8 +8,9 @@ import (
 // GetSocketPath returns the socket path
 //
 // It checks for environment variable AEROSPACESOCK or uses the default socket path.
-//  Default: /tmp/bobko.aerospace-<username>.sock
-//  See: https://github.com/nikitabobko/AeroSpace/blob/f12ee6c9d914f7b561ff7d5c64909882c67061cd/Sources/Cli/_main.swift#L47
+//
+//	Default: /tmp/bobko.aerospace-<username>.sock
+//	See: https://github.com/nikitabobko/AeroSpace/blob/f12ee6c9d914f7b561ff7d5c64909882c67061cd/Sources/Cli/_main.swift#L47
 //
 // Returns the socket path or an error if the path does not exist
 func GetSocketPath() (string, error) {

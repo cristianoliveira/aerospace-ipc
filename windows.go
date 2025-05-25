@@ -5,23 +5,24 @@ import (
 	"fmt"
 )
 
-// W
+// Window represents a window managed by the AeroSpace window manager.
 //
 // See: aerospace list-windows --all --json
 //
 // Example JSON response:
-//     [
-//         {
-//             "window-id": 123456,
-//             "window-title": "Terminal - MyApp",
-//             "app-name": "MyApp"
-//         },
-//         {
-//             "window-id": 789012,
-//             "window-title": "Web Browser - Example",
-//             "app-name": "Web Browser"
-//         }
-//     ]
+//
+//	[
+//	    {
+//	        "window-id": 123456,
+//	        "window-title": "Terminal - MyApp",
+//	        "app-name": "MyApp"
+//	    },
+//	    {
+//	        "window-id": 789012,
+//	        "window-title": "Web Browser - Example",
+//	        "app-name": "Web Browser"
+//	    }
+//	]
 type Window struct {
 	WindowID    int    `json:"window-id"`
 	WindowTitle string `json:"window-title"`
@@ -29,9 +30,9 @@ type Window struct {
 }
 
 func (w Window) String() string {
-	builder := fmt.Sprintf("%d | %s", w.WindowID, w.AppName)
+	builder := fmt.Sprintf("%d | %s ", w.WindowID, w.AppName)
 	if w.WindowTitle != "" {
-		builder += fmt.Sprintf(" | %s", w.WindowTitle)
+		builder += fmt.Sprintf("| %s", w.WindowTitle)
 	}
 
 	return builder

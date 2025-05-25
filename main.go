@@ -2,12 +2,14 @@ package aerospace
 
 import (
 	"fmt"
+
+	"github.com/cristianoliveira/aerospace-ipc/client"
 )
 
 // AeroSpaceClient defines the interface for interacting with AeroSpaceWM.
 type AeroSpaceClient interface {
 	// Windows Methods
-	
+
 	// GetAllWindows returns all windows currently managed by the window manager.
 	//
 	// It is equivalent to running the command:
@@ -48,7 +50,6 @@ type AeroSpaceClient interface {
 	// The result is returned as a Workspace struct.
 	GetFocusedWorkspace() (*Workspace, error)
 
-
 	// MoveWindowToWorkspace moves a window to a specified workspace.
 	//
 	// It is equivalent to running the command:
@@ -56,7 +57,6 @@ type AeroSpaceClient interface {
 	//
 	// Returns an error if the operation fails.
 	MoveWindowToWorkspace(windowID int, workspaceName string) error
-
 
 	// Layout Methods
 	// SetLayout sets the layout for a specified window.
@@ -72,8 +72,8 @@ type AeroSpaceClient interface {
 	// Client returns the AeroSpaceWM client.
 	//
 	// Returns the AeroSpaceSocketConn interface for further operations.
-	Client() AeroSpaceSocketConn
-	
+	Client() client.AeroSpaceSocketConn
+
 	// CloseConnection closes the AeroSpaceWM connection and releases resources.
 	//
 	// Returns an error if the operation fails.
@@ -83,10 +83,10 @@ type AeroSpaceClient interface {
 // AeroSpaceWM implements the AeroSpaceClient interface.
 type AeroSpaceWM struct {
 	MinAerospaceVersion string
-	Conn                AeroSpaceSocketConn
+	Conn                client.AeroSpaceSocketConn
 }
 
-func (a *AeroSpaceWM) Client() (AeroSpaceSocketConn) {
+func (a *AeroSpaceWM) Client() client.AeroSpaceSocketConn {
 	if a.Conn == nil {
 		panic("ASSERTION: AeroSpaceWM client is not initialized")
 	}
@@ -105,7 +105,8 @@ func (a *AeroSpaceWM) CloseConnection() error {
 // NewAeroSpaceClient creates a new AeroSpaceClient with the default socket path.
 //
 // It checks for environment variable AEROSPACESOCK or uses the default socket path.
-//  Default: /tmp/bobko.aerospace-<username>.sock
+//
+//	Default: /tmp/bobko.aerospace-<username>.sock
 //
 // Returns an AeroSpaceWM client or an error if the connection fails.
 func NewAeroSpaceConnection() (*AeroSpaceWM, error) {

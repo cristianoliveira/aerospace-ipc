@@ -5,22 +5,22 @@ import (
 	"fmt"
 )
 
-
 // Workspace represents a workspace in AeroSpaceWM.
-// 
+//
 // See: aerospace list-workspaces --all --json
 //
 // Example JSON response:
-//     [
-//         {
-//             "workspace": "42",
-//         },
-//         {
-//             "workspace": "terminal",
-//         }
-//     ]
+//
+//	[
+//	    {
+//	        "workspace": "42",
+//	    },
+//	    {
+//	        "workspace": "terminal",
+//	    }
+//	]
 type Workspace struct {
-	Workspace string    `json:"workspace"`
+	Workspace string `json:"workspace"`
 }
 
 func (a *AeroSpaceWM) GetFocusedWorkspace() (*Workspace, error) {

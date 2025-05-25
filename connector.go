@@ -3,17 +3,21 @@ package aerospace
 import (
 	"fmt"
 	"net"
+
+	"github.com/cristianoliveira/aerospace-ipc/client"
 )
 
 // Connector should return AeroSpaceConnectiono
 // AeroSpaceConnector is an interface for connecting to the AeroSpace socket.
 //
 // It provides a method to establish a connection and return an AeroSpaceSocketConn.
-//  See: AeroSpaceDefaultConnector for the default implementation.
+//
+//	See: AeroSpaceDefaultConnector for the default implementation.
+//
 // It allows one to set their custom connector if needed, for testing or other purposes.
 type AeroSpaceConnector interface {
 	// Connect to the AeroSpace Socket and return client
-	Connect() (AeroSpaceSocketConn, error)
+	Connect() (client.AeroSpaceSocketConn, error)
 }
 
 // AeroSpaceDefaultConnector is the default implementation of AeroSpaceConnector.
@@ -21,7 +25,7 @@ type AeroSpaceConnector interface {
 // In most cases, you will use this connector to connect to the AeroSpace socket.
 type AeroSpaceDefaultConnector struct{}
 
-func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceSocketConn, error) {
+func (c *AeroSpaceDefaultConnector) Connect() (client.AeroSpaceSocketConn, error) {
 	socketPath, err := GetSocketPath()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get socket path\n %w", err)
@@ -32,10 +36,10 @@ func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceSocketConn, error) {
 		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
 	}
 
-	client := &AeroSpaceSocketConnection{
+	client := &client.AeroSpaceSocketConnection{
 		MinAerospaceVersion: AeroSpaceSocketClientVersion,
 		Conn:                &conn,
-		socketPath:          socketPath,
+		SocketPath:          socketPath,
 	}
 
 	return client, nil

@@ -1,4 +1,4 @@
-package aerospace
+package client
 
 import (
 	"encoding/json"
@@ -22,14 +22,14 @@ type Response struct {
 }
 
 // AeroSpaceSocketConn is an interface interacting with a AeroSpace socket.
-// 
+//
 // It provides methos to execute low-level commands and manage the connection.
 type AeroSpaceSocketConn interface {
 	// CloseConnection closes the connection to the AeroSpace socket.
 	CloseConnection() error
 
 	// SendCommand sends a raw command to the AeroSpace socket and returns a raw response.
-	// 
+	//
 	// It is equivalent to running the command:
 	//   aerospace <command> <args...>
 	//
@@ -45,7 +45,6 @@ type AeroSpaceSocketConnection struct {
 	SocketPath          string
 	MinAerospaceVersion string
 	Conn                *net.Conn
-	socketPath          string
 }
 
 func (c *AeroSpaceSocketConnection) GetSocketPath() (string, error) {
@@ -53,7 +52,7 @@ func (c *AeroSpaceSocketConnection) GetSocketPath() (string, error) {
 		return "", fmt.Errorf("missing socket path")
 	}
 
-	return c.socketPath, nil
+	return c.SocketPath, nil
 }
 
 func (c *AeroSpaceSocketConnection) CloseConnection() error {
