@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Window represents a window in AeroSpaceWM.
+// W
 //
 // See: aerospace list-windows --all --json
 //
@@ -29,7 +29,12 @@ type Window struct {
 }
 
 func (w Window) String() string {
-	return fmt.Sprintf("%d | %s | %s", w.WindowID, w.AppName, w.WindowTitle)
+	builder := fmt.Sprintf("%d | %s", w.WindowID, w.AppName)
+	if w.WindowTitle != "" {
+		builder += fmt.Sprintf(" | %s", w.WindowTitle)
+	}
+
+	return builder
 }
 
 func (c *AeroSpaceWM) GetAllWindows() ([]Window, error) {

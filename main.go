@@ -95,6 +95,10 @@ func (a *AeroSpaceWM) Client() (AeroSpaceSocketConn) {
 }
 
 func (a *AeroSpaceWM) CloseConnection() error {
+	if a.Conn == nil {
+		panic("ASSERTION: AeroSpaceWM client is not initialized")
+	}
+
 	return a.Conn.CloseConnection()
 }
 
