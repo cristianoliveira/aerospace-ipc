@@ -1,4 +1,4 @@
-# aerospace-ipcIndex out of range: %d", index)
+# aerospace-ipc
 
 A Go library for interacting with the AeroSpace window manager via Unix socket.
 
