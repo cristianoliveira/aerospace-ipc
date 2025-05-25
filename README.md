@@ -34,7 +34,12 @@ import aerospacecli "github.com/cristianoliveira/aerospace-ipc"
 func main() {
     client, err := aerospacecli.NewAeroSpaceConnection()
     if err != nil {
-        log.Fatalf("Failed to connect: %v", err)
+        // Your choice here, the client will return but there might be incompatibilities
+		if strings.Contains(err.Error(), "[VERSION-MISMATCH]") {
+			fmt.Printf("[WARN] %s\n", err)
+		} else {
+			log.Fatalf("Failed to connect: %v", err)
+		}
     }
     defer client.CloseConnection()
 
