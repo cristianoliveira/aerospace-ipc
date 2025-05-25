@@ -53,8 +53,6 @@ func (c *AeroSpaceDefaultConnector) Connect() (client.AeroSpaceSocketConn, error
 type AeroSpaceCustomConnector struct {
 	// SocketPath is the custom socket path for the AeroSpace connection.
 	SocketPath string
-	// MinAerospaceVersion is the minimum version of the AeroSpace server that this connector supports.
-	MinAerospaceVersion string
 	// ValidateVersion indicates whether to validate the version of the AeroSpace server.
 	ValidateVersion bool
 }

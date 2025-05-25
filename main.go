@@ -82,8 +82,7 @@ type AeroSpaceClient interface {
 
 // AeroSpaceWM implements the AeroSpaceClient interface.
 type AeroSpaceWM struct {
-	MinAerospaceVersion string
-	Conn                client.AeroSpaceSocketConn
+	Conn client.AeroSpaceSocketConn
 }
 
 func (a *AeroSpaceWM) Client() client.AeroSpaceSocketConn {
@@ -116,8 +115,7 @@ func NewAeroSpaceConnection() (*AeroSpaceWM, error) {
 	}
 
 	client := &AeroSpaceWM{
-		MinAerospaceVersion: "0.15.2-Beta",
-		Conn:                conn,
+		Conn: conn,
 	}
 
 	return client, nil
@@ -137,9 +135,8 @@ func NewAeroSpaceCustomConnection(opts AeroSpaceCustomConnectionOpts) (*AeroSpac
 	}
 
 	connector := &AeroSpaceCustomConnector{
-		MinAerospaceVersion: "0.15.2-Beta",
-		SocketPath:          opts.SocketPath,
-		ValidateVersion:     opts.ValidateVersion,
+		SocketPath:      opts.SocketPath,
+		ValidateVersion: opts.ValidateVersion,
 	}
 
 	conn, err := connector.Connect()
@@ -148,8 +145,7 @@ func NewAeroSpaceCustomConnection(opts AeroSpaceCustomConnectionOpts) (*AeroSpac
 	}
 
 	client := &AeroSpaceWM{
-		MinAerospaceVersion: "0.15.2-Beta",
-		Conn:                conn,
+		Conn: conn,
 	}
 
 	return client, nil
