@@ -1,0 +1,9 @@
+{
+  "command": "",
+  "args": [
+    "list-windows",
+    "--all",
+    "--json"
+  ],
+  "stdin": ""
+}

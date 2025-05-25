@@ -16,7 +16,7 @@ type Command struct {
 
 // Response represents the JSON structure from AeroSpace socket response.
 type Response struct {
-	ServerVersion string `json:"serverVersion"` // Fornat: "0.0.1-Beta"
+	ServerVersion string `json:"serverVersionAndHash"` // Fornat: "0.0.1-Beta <hash>"
 	StdErr        string `json:"stderr"`
 	StdOut        string `json:"stdout"`
 	ExitCode      int32  `json:"exitCode"`
