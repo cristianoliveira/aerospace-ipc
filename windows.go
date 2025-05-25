@@ -5,15 +5,23 @@ import (
 	"fmt"
 )
 
-/*
-Example:
-
-	{
-	  "window-id" : 7984,
-	  "window-title" : "WhatsApp",
-	  "app-name" : "WhatsApp"
-	}
-*/
+// Window represents a window in AeroSpaceWM.
+//
+// See: aerospace list-windows --all --json
+//
+// Example JSON response:
+//     [
+//         {
+//             "window-id": 123456,
+//             "window-title": "Terminal - MyApp",
+//             "app-name": "MyApp"
+//         },
+//         {
+//             "window-id": 789012,
+//             "window-title": "Web Browser - Example",
+//             "app-name": "Web Browser"
+//         }
+//     ]
 type Window struct {
 	WindowID    int    `json:"window-id"`
 	WindowTitle string `json:"window-title"`

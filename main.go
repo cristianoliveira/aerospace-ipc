@@ -4,72 +4,83 @@ import (
 	"fmt"
 )
 
+// AeroSpaceClient defines the interface for interacting with AeroSpaceWM.
 type AeroSpaceClient interface {
 	// Windows Methods
 	
-	// GetAllWindows returns all windows
-	// 
-	// Returns all windows from AeroSpaceWM
-	// Same as `aerospace list-windows --all --json`
+	// GetAllWindows returns all windows currently managed by the window manager.
+	//
+	// It is equivalent to running the command:
+	//   aerospace list-windows --all --json
+	//
+	// The result is returned a list of Window structs.
 	GetAllWindows() ([]Window, error)
 
-	// GetAllWindowsByWorkspace returns all windows by workspace
+	// GetAllWindowsByWorkspace returns all windows in a specified workspace.
 	//
-	// Returns all windows from AeroSpaceWM by workspace
-	// Same as `aerospace list-windows --workspace <workspace> --json`
+	// It is equivalent to running the command:
+	//   aerospace list-windows --workspace <workspace> --json
+	//
+	// The result is returned as a list of Window structs.
 	GetAllWindowsByWorkspace(workspaceName string) ([]Window, error)
 
-	// GetFocusedWindow returns the focused window
+	// GetFocusedWindow returns the currently focused window.
 	//
-	// Returns the focused window from AeroSpaceWM
-	// Same as `aerospace list-windows --focused --json`
+	// It is equivalent to running the command:
+	//   aerospace list-windows --focused --json
+	//
+	// The result is returned as a Window struct.
 	GetFocusedWindow() (*Window, error)
 
-	// SetFocusByWindowID sets the focused window
+	// SetFocusByWindowID sets the focus to a window specified by its ID.
 	//
-	// Sets the focused window from AeroSpaceWM
-	// Same as `aerospace focus --window-id <window-id>`
+	// It is equivalent to running the command:
+	//   aerospace focus --window-id <window-id>
+	//
+	// Returns an error if the operation fails.
 	SetFocusByWindowID(windowID int) error
 
-	// GetFocusedWorkspace returns the current workspace
+	// GetFocusedWorkspace returns the currently focused workspace.
 	//
-	// Returns the current workspace from AeroSpaceWM
-	// Same as:
+	// It is equivalent to running the command:
+	//   aerospace list-workspaces --focused --json
 	//
-	// aerospace list-workspaces --focused --json
+	// The result is returned as a Workspace struct.
 	GetFocusedWorkspace() (*Workspace, error)
 
 
-	// MoveWindowToWorkspace moves the window to the workspace
+	// MoveWindowToWorkspace moves a window to a specified workspace.
 	//
-	// Moves the window to the workspace from AeroSpaceWM
-	// Similar to:
+	// It is equivalent to running the command:
+	//   aerospace move-node-to-workspace <workspace> --window-id <window-id>
 	//
-	// aerospace move-node-to-workspace <workspace> --window-id <window-id>
+	// Returns an error if the operation fails.
 	MoveWindowToWorkspace(windowID int, workspaceName string) error
 
 
 	// Layout Methods
-	// SetLayout sets the layout for a window
+	// SetLayout sets the layout for a specified window.
 	//
-	// Sets the layout for a window from AeroSpaceWM 
-	// Similar to:
+	// It is equivalent to running the command:
+	//   aerospace layout <floating|tiled> --window-id <window-id>
 	//
-	// aerospace layout <floating|tiled> --window-id <window-id>
+	// Returns an error if the operation fails.
 	SetLayout(windowID int, layout string) error
 
 	// Connection Methods
 
-	// Client returns the AeroSpaceWM client
+	// Client returns the AeroSpaceWM client.
 	//
-	// Returns the AeroSpaceWM client
+	// Returns the AeroSpaceSocketConn interface for further operations.
 	Client() AeroSpaceSocketConn
 	
-	// CloseConnection
-	// Closes the AeroSpaceWM connection and releases the resources
+	// CloseConnection closes the AeroSpaceWM connection and releases resources.
+	//
+	// Returns an error if the operation fails.
 	CloseConnection() error
 }
 
+// AeroSpaceWM implements the AeroSpaceClient interface.
 type AeroSpaceWM struct {
 	MinAerospaceVersion string
 	Conn                AeroSpaceSocketConn
@@ -88,8 +99,11 @@ func (a *AeroSpaceWM) CloseConnection() error {
 }
 
 // NewAeroSpaceClient creates a new AeroSpaceClient with the default socket path.
+//
 // It checks for environment variable AEROSPACESOCK or uses the default socket path.
-// which is usually /tmp/bobko.aerospace-<username>.sock
+//  Default: /tmp/bobko.aerospace-<username>.sock
+//
+// Returns an AeroSpaceWM client or an error if the connection fails.
 func NewAeroSpaceConnection() (*AeroSpaceWM, error) {
 	conn, err := DefaultConnector.Connect()
 	if err != nil {

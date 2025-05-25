@@ -23,17 +23,26 @@ type Response struct {
 	ExitCode      int32  `json:"exitCode"`
 }
 
+// AeroSpaceSocketConn is an interface interacting with a AeroSpace socket.
+// 
+// It provides methos to execute low-level commands and manage the connection.
 type AeroSpaceSocketConn interface {
 	// CloseConnection closes the connection to the AeroSpace socket.
 	CloseConnection() error
 
-	// SendCommand sends a command to the AeroSpace socket and returns the response.
+	// SendCommand sends a raw command to the AeroSpace socket and returns a raw response.
+	// 
+	// It is equivalent to running the command:
+	//   aerospace <command> <args...>
+	//
+	// Returns a Response struct containing the server version, standard error, standard output, and exit code.
 	SendCommand(command string, args []string) (*Response, error)
 
 	// GetSocketPath returns the socket path for the AeroSpace connection.
 	GetSocketPath() (string, error)
 }
 
+// AeroSpaceSocketConnection implements the AeroSpaceSocketConn interface.
 type AeroSpaceSocketConnection struct {
 	SocketPath          string
 	MinAerospaceVersion string
@@ -106,11 +115,19 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 	return &response, nil
 }
 
+// AeroSpaceConnector is an interface for connecting to the AeroSpace socket.
+//
+// It provides a method to establish a connection and return an AeroSpaceSocketConn.
+//  See: AeroSpaceDefaultConnector for the default implementation.
+// It allows one to set their custom connector if needed, for testing or other purposes.
 type AeroSpaceConnector interface {
 	// Connect to the AeroSpace Socket and return client
 	Connect() (AeroSpaceSocketConn, error)
 }
 
+// AeroSpaceDefaultConnector is the default implementation of AeroSpaceConnector.
+//
+// In most cases, you will use this connector to connect to the AeroSpace socket.
 type AeroSpaceDefaultConnector struct{}
 
 func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceSocketConn, error) {

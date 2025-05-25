@@ -5,18 +5,20 @@ import (
 	"fmt"
 )
 
-/**
- * Workspace represents the JSON structure for workspace commands.
- * Example:
-[
-  {
-    "workspace" : "9"
-  },
-  {
-    "workspace" : "scratchpad"
-  }
-]
-*/
+
+// Workspace represents a workspace in AeroSpaceWM.
+// 
+// See: aerospace list-workspaces --all --json
+//
+// Example JSON response:
+//     [
+//         {
+//             "workspace": "42",
+//         },
+//         {
+//             "workspace": "terminal",
+//         }
+//     ]
 type Workspace struct {
 	Workspace string    `json:"workspace"`
 }
