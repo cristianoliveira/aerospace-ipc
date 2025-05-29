@@ -1,6 +1,8 @@
 # aerospace-ipc
 
-A Go library for interacting with the AeroSpace window manager via Unix socket.
+A Go library for interacting with the AeroSpace window manager via IPC
+
+*Minimum AeroSpace version:* `v0.15.x`
 
 ## Description
 
