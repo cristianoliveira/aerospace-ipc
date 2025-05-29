@@ -1,0 +1,11 @@
+{
+  "command": "",
+  "args": [
+    "list-windows",
+    "--all",
+    "--json",
+    "--format",
+    "%{window-id} %{app-name} %{app-bundle-id}"
+  ],
+  "stdin": ""
+}

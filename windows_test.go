@@ -37,6 +37,17 @@ func TestWindows(t *testing.T) {
 				window:   Window{WindowID: 101, WindowTitle: "", AppName: "EmptyTitleApp"},
 				expected: "101 | EmptyTitleApp ",
 			},
+			{
+				title: "Window with more fields",
+				window: Window{
+					WindowID:    101,
+					WindowTitle: "Another Window",
+					AppName:     "EmptyTitleApp",
+					AppBundleID: "com.example.app",
+					Workspace:   "Workspace1",
+				},
+				expected: "101 | EmptyTitleApp | Another Window | Workspace1 | com.example.app",
+			},
 		}
 		for _, tc := range testCases {
 			t.Run(tc.title, func(t *testing.T) {
@@ -66,7 +77,14 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 			t.Fatalf("failed to marshal windows response: %v", err)
 		}
 		mockConn.EXPECT().
-			SendCommand("list-windows", []string{"--all", "--json"}).
+			SendCommand(
+				"list-windows",
+				[]string{
+					"--all",
+					"--json",
+					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+				},
+			).
 			Return(
 				&client.Response{
 					StdOut: string(windowsJSON),
@@ -107,7 +125,14 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 			t.Fatalf("failed to marshal windows response: %v", err)
 		}
 		mockConn.EXPECT().
-			SendCommand("list-windows", []string{"--workspace", "my-workspace", "--json"}).
+			SendCommand(
+				"list-windows",
+				[]string{
+					"--workspace", "my-workspace",
+					"--json",
+					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+				},
+			).
 			Return(
 				&client.Response{
 					StdOut: string(windowsJSON),
@@ -147,7 +172,14 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 			t.Fatalf("failed to marshal focused window response: %v", err)
 		}
 		mockConn.EXPECT().
-			SendCommand("list-windows", []string{"--focused", "--json"}).
+			SendCommand(
+				"list-windows",
+				[]string{
+					"--focused",
+					"--json",
+					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+				},
+			).
 			Return(
 				&client.Response{
 					StdOut: string(focusedWindowJSON),
@@ -201,7 +233,14 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		mockConn.EXPECT().
-			SendCommand("list-windows", []string{"--all", "--json"}).
+			SendCommand(
+				"list-windows",
+				[]string{
+					"--all",
+					"--json",
+					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+				},
+			).
 			Return(nil, fmt.Errorf("connection error"))
 
 		_, err := aeroSpaceWM.GetAllWindows()
@@ -217,8 +256,16 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
+		var workspaceName = "nonexistent-workspace"
 		mockConn.EXPECT().
-			SendCommand("list-windows", []string{"--workspace", "nonexistent-workspace", "--json"}).
+			SendCommand(
+				"list-windows",
+				[]string{
+					"--workspace", workspaceName,
+					"--json",
+					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+				},
+			).
 			Return(nil, fmt.Errorf("workspace not found"))
 
 		_, err := aeroSpaceWM.GetAllWindowsByWorkspace("nonexistent-workspace")
@@ -235,7 +282,14 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		mockConn.EXPECT().
-			SendCommand("list-windows", []string{"--focused", "--json"}).
+			SendCommand(
+				"list-windows",
+				[]string{
+					"--focused",
+					"--json",
+					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+				},
+			).
 			Return(nil, fmt.Errorf("no focused window found"))
 
 		_, err := aeroSpaceWM.GetFocusedWindow()
@@ -257,7 +311,14 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 			t.Fatalf("failed to marshal focused window response: %v", err)
 		}
 		mockConn.EXPECT().
-			SendCommand("list-windows", []string{"--focused", "--json"}).
+			SendCommand(
+				"list-windows",
+				[]string{
+					"--focused",
+					"--json",
+					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+				},
+			).
 			Return(
 				&client.Response{
 					StdOut: string(focusedWindowJSON),
