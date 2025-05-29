@@ -42,7 +42,10 @@ func (a *AeroSpaceWM) GetFocusedWorkspace() (*Workspace, error) {
 }
 
 func (a *AeroSpaceWM) MoveWindowToWorkspace(windowID int, workspaceName string) error {
-	response, err := a.Conn.SendCommand("move-node-to-workspace", []string{workspaceName, "--window-id", fmt.Sprintf("%d", windowID)})
+	response, err := a.Conn.SendCommand(
+		"move-node-to-workspace",
+		[]string{workspaceName, "--window-id", fmt.Sprintf("%d", windowID)},
+	)
 	if err != nil {
 		return err
 	}

@@ -11,22 +11,26 @@ import (
 //
 // Example JSON response:
 //
-//	[
-//	    {
-//	        "window-id": 123456,
-//	        "window-title": "Terminal - MyApp",
-//	        "app-name": "MyApp"
-//	    },
-//	    {
-//	        "window-id": 789012,
-//	        "window-title": "Web Browser - Example",
-//	        "app-name": "Web Browser"
-//	    }
-//	]
+//		[
+//	   {
+//	     "window-id" : 6231,
+//	     "workspace" : "8",
+//	     "app-bundle-id" : "com.brave.Browser.app.agimnkijcaahngcdmfeangaknmldooml",
+//	     "app-name" : "YouTube"
+//	   },
+//	   {
+//	     "window-id" : 10772,
+//	     "workspace" : ".scratchpad",
+//	     "app-name" : "‎WhatsApp",
+//	     "app-bundle-id" : "net.whatsapp.WhatsApp"
+//	   }
+//		]
 type Window struct {
 	WindowID    int    `json:"window-id"`
 	WindowTitle string `json:"window-title"`
 	AppName     string `json:"app-name"`
+	AppBundleID string `json:"app-bundle-id"`
+	Workspace   string `json:"workspace"`
 }
 
 func (w Window) String() string {
@@ -34,12 +38,25 @@ func (w Window) String() string {
 	if w.WindowTitle != "" {
 		builder += fmt.Sprintf("| %s", w.WindowTitle)
 	}
+	if w.Workspace != "" {
+		builder += fmt.Sprintf(" | %s", w.Workspace)
+	}
+	if w.AppBundleID != "" {
+		builder += fmt.Sprintf(" | %s", w.AppBundleID)
+	}
 
 	return builder
 }
 
 func (c *AeroSpaceWM) GetAllWindows() ([]Window, error) {
-	response, err := c.Conn.SendCommand("list-windows", []string{"--all", "--json"})
+	response, err := c.Conn.SendCommand(
+		"list-windows",
+		[]string{
+			"--all",
+			"--json",
+			"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +69,14 @@ func (c *AeroSpaceWM) GetAllWindows() ([]Window, error) {
 }
 
 func (c *AeroSpaceWM) GetAllWindowsByWorkspace(workspaceName string) ([]Window, error) {
-	response, err := c.Conn.SendCommand("list-windows", []string{"--workspace", workspaceName, "--json"})
+	response, err := c.Conn.SendCommand(
+		"list-windows",
+		[]string{
+			"--workspace", workspaceName,
+			"--json",
+			"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +90,14 @@ func (c *AeroSpaceWM) GetAllWindowsByWorkspace(workspaceName string) ([]Window, 
 }
 
 func (c *AeroSpaceWM) GetFocusedWindow() (*Window, error) {
-	response, err := c.Conn.SendCommand("list-windows", []string{"--focused", "--json"})
+	response, err := c.Conn.SendCommand(
+		"list-windows",
+		[]string{
+			"--focused",
+			"--json",
+			"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
