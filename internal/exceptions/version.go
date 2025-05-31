@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var ErrVersion = errors.New("Server version does not match the minimum required version")
+var ErrVersion = errors.New("server version does not match the minimum client version")
 
 type ErrVersionMismatch struct {
 	MinorVersion   int
