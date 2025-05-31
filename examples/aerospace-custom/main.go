@@ -45,7 +45,7 @@ func main() {
 		input := strings.TrimSpace(text)
 		if input == "" {
 			fmt.Println("No window selected, exiting.")
-		} else  {
+		} else {
 			index, err := strconv.Atoi(input)
 			if err != nil {
 				log.Fatalf("Invalid input: %v", err)
@@ -54,7 +54,7 @@ func main() {
 			if index < 0 || index >= len(windows) {
 				log.Fatalf("No window with index %d", index)
 			}
-			
+
 			err = client.SetFocusByWindowID(windows[index].WindowID)
 			if err != nil {
 				log.Fatalf("Failed to focus on window: %v", err)
