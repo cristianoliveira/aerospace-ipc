@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
@@ -49,6 +50,7 @@ type AeroSpaceSocketConn interface {
 
 // AeroSpaceSocketConnection implements the AeroSpaceSocketConn interface.
 type AeroSpaceSocketConnection struct {
+	mu              sync.Mutex
 	SocketPath      string
 	MinMajorVersion int
 	MinMinorVersion int
@@ -64,6 +66,8 @@ func (c *AeroSpaceSocketConnection) GetSocketPath() (string, error) {
 }
 
 func (c *AeroSpaceSocketConnection) CloseConnection() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if c.Conn != nil {
 		err := (*c.Conn).Close()
 		if err != nil {
@@ -74,6 +78,8 @@ func (c *AeroSpaceSocketConnection) CloseConnection() error {
 }
 
 func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if serverVersion == "" {
 		return fmt.Errorf("server version is empty")
 	}
@@ -102,6 +108,8 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) err
 
 // SendCommand sends a command to the AeroSpace window manager via Unix socket and returns the response.
 func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (*Response, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if c.Conn == nil {
 		return nil, fmt.Errorf("connection is not established")
 	}
