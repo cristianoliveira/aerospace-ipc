@@ -15,6 +15,8 @@
           packages = with pkgs; [
             go
 
+            golangci-lint
+
             # To create new subcommands, run:
             # cobra-cli add <subcommand-name>
             cobra-cli
@@ -27,12 +29,6 @@
             # nc -U /tmp/aerospace.sock < fixture/foobar.json
             # netcat-openbsd
           ];
-        };
-
-        packages = {
-          default = pkgs.callPackage ./nix/package-default.nix {};
-          nightly = pkgs.callPackage ./nix/package-nightly.nix {};
-          source = pkgs.callPackage ./nix/package-source.nix {};
         };
     });
 }
