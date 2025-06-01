@@ -1,4 +1,7 @@
 # aerospace-ipc
+[![Go project version](https://badge.fury.io/go/github.com%2Fcristianoliveira%2Faerospace-ipc.svg)](https://badge.fury.io/go/github.com%2Fcristianoliveira%2Faerospace-ipc)
+[![Go Reference](https://pkg.go.dev/badge/github.com/cristianoliveira/aerospace-ipc.svg)](https://pkg.go.dev/github.com/cristianoliveira/aerospace-ipc)
+[![Quick Checks](https://github.com/cristianoliveira/aerospace-ipc/actions/workflows/on-push.yml/badge.svg)](https://github.com/cristianoliveira/aerospace-ipc/actions/workflows/on-push.yml)
 
 A Go library for interacting with the AeroSpace window manager via IPC
 
