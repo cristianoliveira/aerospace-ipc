@@ -63,7 +63,12 @@ func (c *AeroSpaceWM) GetAllWindows() ([]Window, error) {
 	var windows []Window
 	err = json.Unmarshal([]byte(response.StdOut), &windows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(
+			"failed to unmarshal windows: %w\nOut:%s\nErr:%s",
+			err,
+			response.StdOut,
+			response.StdErr,
+		)
 	}
 	return windows, nil
 }
@@ -84,7 +89,12 @@ func (c *AeroSpaceWM) GetAllWindowsByWorkspace(workspaceName string) ([]Window, 
 	var windows []Window
 	err = json.Unmarshal([]byte(response.StdOut), &windows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(
+			"failed to unmarshal windows: %w\nOut:%s\nErr:%s",
+			err,
+			response.StdOut,
+			response.StdErr,
+		)
 	}
 	return windows, nil
 }
@@ -105,7 +115,12 @@ func (c *AeroSpaceWM) GetFocusedWindow() (*Window, error) {
 	var windows []Window
 	err = json.Unmarshal([]byte(response.StdOut), &windows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf(
+			"failed to unmarshal windows: %w\nOut:%s\nErr:%s",
+			err,
+			response.StdOut,
+			response.StdErr,
+		)
 	}
 	if len(windows) == 0 {
 		return nil, fmt.Errorf("no windows focused found")
