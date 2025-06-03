@@ -153,7 +153,7 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 	err = json.Unmarshal(responseData, &response)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"failed to unmarshal response\n%w\ndata\n%s",
+			"failed to unmarshal socket response\n%w\ndata\n%s",
 			err,
 			responseData,
 		)
