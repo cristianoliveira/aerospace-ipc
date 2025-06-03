@@ -141,7 +141,11 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 			if err == io.EOF {
 				break
 			}
-			return nil, fmt.Errorf("failed to read response\n%w", err)
+			return nil, fmt.Errorf(
+				"failed to read response\n%w\ndata\n%s",
+				err,
+				responseData,
+			)
 		}
 		responseData = append(responseData, buf[:n]...)
 		if n < len(buf) {
