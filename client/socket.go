@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
 	"strings"
@@ -132,16 +133,30 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 		return nil, fmt.Errorf("failed to send command\n%w", err)
 	}
 
+	var responseData []byte
 	buf := make([]byte, 4096)
-	n, err := (*c.Conn).Read(buf)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response\n%w", err)
+	for {
+		n, err := (*c.Conn).Read(buf)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, fmt.Errorf("failed to read response\n%w", err)
+		}
+		responseData = append(responseData, buf[:n]...)
+		if n < len(buf) {
+			break
+		}
 	}
 
 	var response Response
-	err = json.Unmarshal(buf[:n], &response)
+	err = json.Unmarshal(responseData, &response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response\n%w", err)
+		return nil, fmt.Errorf(
+			"failed to unmarshal response\n%w\ndata\n%s",
+			err,
+			responseData,
+		)
 	}
 
 	if response.ExitCode != 0 {
@@ -149,7 +164,7 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 	}
 
 	if response.StdErr != "" {
-		return nil, fmt.Errorf("command error\n %s", response.StdErr)
+		return nil, fmt.Errorf("command error\n%s", response.StdErr)
 	}
 
 	return &response, nil
