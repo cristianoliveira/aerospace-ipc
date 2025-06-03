@@ -1,0 +1,152 @@
+[
+  {
+    "app-bundle-id": "org.alacritty",
+    "app-name": "Alacritty",
+    "window-id": 14125,
+    "workspace": "2"
+  },
+  {
+    "app-bundle-id": "com.bitwarden.desktop",
+    "app-name": "Bitwarden",
+    "window-id": 15739,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "com.brave.Browser",
+    "app-name": "Brave Browser",
+    "window-id": 15265,
+    "workspace": "0"
+  },
+  {
+    "app-bundle-id": "com.brave.Browser",
+    "app-name": "Brave Browser",
+    "window-id": 13718,
+    "workspace": "9"
+  },
+  {
+    "app-bundle-id": "com.apple.iCal",
+    "app-name": "Calendar",
+    "window-id": 144,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "com.brave.Browser.app.cadlkienfkclaiaibeoongdcgmdikeeg",
+    "app-name": "ChatGPT",
+    "window-id": 15111,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "org.chromium.Chromium",
+    "app-name": "Chromium",
+    "window-id": 18800,
+    "workspace": "2"
+  },
+  {
+    "app-bundle-id": "com.apple.clock",
+    "app-name": "Clock",
+    "window-id": 75,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "com.apple.finder",
+    "app-name": "Finder",
+    "window-id": 14002,
+    "workspace": "8"
+  },
+  {
+    "app-bundle-id": "com.apple.finder",
+    "app-name": "Finder",
+    "window-id": 8138,
+    "workspace": "8"
+  },
+  {
+    "app-bundle-id": "com.apple.finder",
+    "app-name": "Finder",
+    "window-id": 18984,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "com.google.Chrome",
+    "app-name": "Google Chrome",
+    "window-id": 172,
+    "workspace": "3"
+  },
+  {
+    "app-bundle-id": "com.google.Chrome",
+    "app-name": "Google Chrome",
+    "window-id": 17920,
+    "workspace": "1"
+  },
+  {
+    "app-bundle-id": "com.google.Chrome",
+    "app-name": "Google Chrome",
+    "window-id": 10605,
+    "workspace": "1"
+  },
+  {
+    "app-bundle-id": "com.google.Chrome",
+    "app-name": "Google Chrome",
+    "window-id": 18293,
+    "workspace": "0"
+  },
+  {
+    "app-bundle-id": "com.google.Chrome.app.kjgfgldnnfoeklkmfkjfagphfepbbdan",
+    "app-name": "Google Meet",
+    "window-id": 11445,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "com.google.Chrome.app.nciajjbihikpboifbgajajannbjlfkmn",
+    "app-name": "JiraBoard",
+    "window-id": 16976,
+    "workspace": "8"
+  },
+  {
+    "app-bundle-id": "md.obsidian",
+    "app-name": "Obsidian",
+    "window-id": 14912,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "com.tinyspeck.slackmacgap",
+    "app-name": "Slack",
+    "window-id": 170,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "com.spotify.client",
+    "app-name": "Spotify",
+    "window-id": 161,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "ru.keepcoder.Telegram",
+    "app-name": "Telegram",
+    "window-id": 171,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "com.brave.Browser.app.agimnkijcaahngcdmfeangaknmldooml",
+    "app-name": "YouTube",
+    "window-id": 13793,
+    "workspace": "7"
+  },
+  {
+    "app-bundle-id": "NULL-APP-BUNDLE-ID",
+    "app-name": "qemu-system-aarch64",
+    "window-id": 18211,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "NULL-APP-BUNDLE-ID",
+    "app-name": "qemu-system-aarch64",
+    "window-id": 18210,
+    "workspace": ".scratchpad"
+  },
+  {
+    "app-bundle-id": "net.whatsapp.WhatsApp",
+    "app-name": "‎WhatsApp",
+    "window-id": 13770,
+    "workspace": ".scratchpad"
+  }
+]
