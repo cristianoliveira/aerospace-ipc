@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cristianoliveira/aerospace-ipc/client"
+	"github.com/cristianoliveira/aerospace-ipc/internal/socket"
 )
 
 // Connector should return AeroSpaceConnectiono
@@ -25,7 +26,7 @@ type AeroSpaceConnector interface {
 type AeroSpaceDefaultConnector struct{}
 
 func (c *AeroSpaceDefaultConnector) Connect() (client.AeroSpaceSocketConn, error) {
-	socketPath, err := GetSocketPath()
+	socketPath, err := socket.GetSocketPath()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get socket path\n %w", err)
 	}
