@@ -113,7 +113,7 @@ func (a *AeroSpaceWM) CloseConnection() error {
 //
 // Returns an AeroSpaceWM client or an error if the connection fails.
 func NewAeroSpaceConnection() (*AeroSpaceWM, error) {
-	conn, err := GetDefaultConnector().Connect()
+	conn, err := client.GetDefaultConnector().Connect()
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
 	}
@@ -138,7 +138,7 @@ func NewAeroSpaceCustomConnection(opts AeroSpaceCustomConnectionOpts) (*AeroSpac
 		return nil, fmt.Errorf("socket path cannot be empty")
 	}
 
-	connector := &AeroSpaceCustomConnector{
+	connector := &client.AeroSpaceCustomConnector{
 		SocketPath:      opts.SocketPath,
 		ValidateVersion: opts.ValidateVersion,
 	}
