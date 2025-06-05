@@ -1,10 +1,6 @@
 package client
 
-import (
-	"fmt"
-
-	"github.com/cristianoliveira/aerospace-ipc/internal/socket"
-)
+import "fmt"
 
 // Connector should return AeroSpaceConnectiono
 // AeroSpaceConnector is an interface for connecting to the AeroSpace socket.
@@ -25,7 +21,7 @@ type AeroSpaceConnector interface {
 type AeroSpaceDefaultConnector struct{}
 
 func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceSocketConn, error) {
-	socketPath, err := socket.GetSocketPath()
+	socketPath, err := GetSocketPath()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get socket path\n %w", err)
 	}
