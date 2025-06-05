@@ -3,8 +3,8 @@ package aerospace
 import (
 	"fmt"
 
-	"github.com/cristianoliveira/aerospace-ipc/client"
 	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
 )
 
 // ErrVersionMismatch indicates that the server version does not match the minimum required version.
