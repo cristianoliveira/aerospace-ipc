@@ -12,7 +12,7 @@ package mock_client
 import (
 	reflect "reflect"
 
-	client "github.com/cristianoliveira/aerospace-ipc/client"
+	client "github.com/cristianoliveira/aerospace-ipc/pkg/client"
 	gomock "go.uber.org/mock/gomock"
 )
 

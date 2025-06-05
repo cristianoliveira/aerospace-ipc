@@ -3,8 +3,8 @@ package aerospace
 import (
 	"fmt"
 
-	"github.com/cristianoliveira/aerospace-ipc/client"
 	"github.com/cristianoliveira/aerospace-ipc/internal/socket"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
 )
 
 // Connector should return AeroSpaceConnectiono
