@@ -24,4 +24,10 @@ func main() {
 	}
 
 	fmt.Println("Listed all windows successfully.")
+
+	socketPath, err := client.Client().GetSocketPath()
+	if err != nil {
+		log.Fatalf("Failed to get socket path: %v", err)
+	}
+	fmt.Printf("Socket path: %s\n", socketPath)
 }
