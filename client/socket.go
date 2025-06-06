@@ -173,3 +173,25 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 
 	return &response, nil
 }
+
+// NewAeroSpaceSocketConnection creates a new AeroSpaceSocketConnection.
+// It initializes the connection to the AeroSpace socket.
+func NewAeroSpaceSocketConnection(socketPath string) (*AeroSpaceSocketConnection, error) {
+	if socketPath == "" {
+		return nil, fmt.Errorf("socket path cannot be empty")
+	}
+
+	conn, err := net.Dial("unix", socketPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
+	}
+
+	client := &AeroSpaceSocketConnection{
+		socketPath:      socketPath,
+		MinMajorVersion: 1, // Example version, adjust as needed
+		MinMinorVersion: 0,
+		Conn:            &conn,
+	}
+
+	return client, nil
+}
