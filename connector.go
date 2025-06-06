@@ -2,10 +2,8 @@ package aerospace
 
 import (
 	"fmt"
-	"net"
 
 	"github.com/cristianoliveira/aerospace-ipc/client"
-	"github.com/cristianoliveira/aerospace-ipc/internal/constants"
 )
 
 // Connector should return AeroSpaceConnectiono
@@ -32,16 +30,9 @@ func (c *AeroSpaceDefaultConnector) Connect() (client.AeroSpaceSocketConn, error
 		return nil, fmt.Errorf("failed to get socket path\n %w", err)
 	}
 
-	conn, err := net.Dial("unix", socketPath)
+	client, err := client.NewAeroSpaceSocketConnection(socketPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
-	}
-
-	client := &client.AeroSpaceSocketConnection{
-		MinMajorVersion: constants.AeroSpaceSocketClientMajor,
-		MinMinorVersion: constants.AeroSpaceSocketClientMinor,
-		Conn:            &conn,
-		socketPath:      socketPath,
+		return nil, fmt.Errorf("failed to creat socket connection\n%w", err)
 	}
 
 	return client, nil
@@ -61,16 +52,10 @@ func (c *AeroSpaceCustomConnector) Connect() (client.AeroSpaceSocketConn, error)
 	if c.SocketPath == "" {
 		return nil, fmt.Errorf("socket path cannot be empty")
 	}
-	conn, err := net.Dial("unix", c.SocketPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
-	}
 
-	client := &client.AeroSpaceSocketConnection{
-		MinMajorVersion: constants.AeroSpaceSocketClientMajor,
-		MinMinorVersion: constants.AeroSpaceSocketClientMinor,
-		Conn:            &conn,
-		socketPath:      c.SocketPath,
+	client, err := client.NewAeroSpaceSocketConnection(c.SocketPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to creat socket connection\n%w", err)
 	}
 
 	response, err := client.SendCommand("config", []string{"--config-path"})
