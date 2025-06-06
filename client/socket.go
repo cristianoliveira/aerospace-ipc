@@ -52,18 +52,18 @@ type AeroSpaceSocketConn interface {
 // AeroSpaceSocketConnection implements the AeroSpaceSocketConn interface.
 type AeroSpaceSocketConnection struct {
 	mu              sync.Mutex
-	SocketPath      string
+	socketPath      string
 	MinMajorVersion int
 	MinMinorVersion int
 	Conn            *net.Conn
 }
 
 func (c *AeroSpaceSocketConnection) GetSocketPath() (string, error) {
-	if c.SocketPath != "" {
+	if c.socketPath == "" {
 		return "", fmt.Errorf("missing socket path")
 	}
 
-	return c.SocketPath, nil
+	return c.socketPath, nil
 }
 
 func (c *AeroSpaceSocketConnection) CloseConnection() error {

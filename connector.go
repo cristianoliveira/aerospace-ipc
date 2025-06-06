@@ -41,7 +41,7 @@ func (c *AeroSpaceDefaultConnector) Connect() (client.AeroSpaceSocketConn, error
 		MinMajorVersion: constants.AeroSpaceSocketClientMajor,
 		MinMinorVersion: constants.AeroSpaceSocketClientMinor,
 		Conn:            &conn,
-		SocketPath:      socketPath,
+		socketPath:      socketPath,
 	}
 
 	return client, nil
@@ -70,7 +70,7 @@ func (c *AeroSpaceCustomConnector) Connect() (client.AeroSpaceSocketConn, error)
 		MinMajorVersion: constants.AeroSpaceSocketClientMajor,
 		MinMinorVersion: constants.AeroSpaceSocketClientMinor,
 		Conn:            &conn,
-		SocketPath:      c.SocketPath,
+		socketPath:      c.SocketPath,
 	}
 
 	response, err := client.SendCommand("config", []string{"--config-path"})

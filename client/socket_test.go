@@ -13,7 +13,7 @@ func TestSocketClient(t *testing.T) {
 			MinMajorVersion: 2,
 			MinMinorVersion: 10,
 			Conn:            nil, // Not used in this test
-			SocketPath:      "/tmp/aerospace.sock",
+			socketPath:      "/tmp/aerospace.sock",
 		}
 
 		err := connection.CheckServerVersion("3.10.0-beta xxxxx")
@@ -23,6 +23,25 @@ func TestSocketClient(t *testing.T) {
 
 		if !errors.Is(err, exceptions.ErrVersion) {
 			t.Fatalf("expected error about minimum version, got %v", err)
+		}
+	})
+
+	t.Run("GetSocketPath - retrieves the socket path", func(tt *testing.T) {
+		expectedSocketPath := "/tmp/aerospace.sock"
+		connection := &AeroSpaceSocketConnection{
+			MinMajorVersion: 2,
+			MinMinorVersion: 10,
+			Conn:            nil, // Not used in this test
+			socketPath:      expectedSocketPath,
+		}
+
+		socketPath, err := connection.GetSocketPath()
+		if err != nil {
+			tt.Fatalf("expected no error, got %v", err)
+		}
+
+		if socketPath != expectedSocketPath {
+			tt.Fatalf("expected socket path %s, got %s", expectedSocketPath, socketPath)
 		}
 	})
 }
