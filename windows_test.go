@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cristianoliveira/aerospace-ipc/client"
 	"github.com/cristianoliveira/aerospace-ipc/internal/mocks"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
 	"go.uber.org/mock/gomock"
 )
 

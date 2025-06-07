@@ -12,19 +12,42 @@ import (
 // Example JSON response:
 //
 //	[
-//	    {
-//	        "workspace": "42",
-//	    },
-//	    {
-//	        "workspace": "terminal",
-//	    }
+//	  {
+//	    "workspace": "42",
+//	  },
+//	  {
+//	    "workspace": "terminal",
+//	  }
 //	]
 type Workspace struct {
 	Workspace string `json:"workspace"`
 }
 
+// GetFocusedWorkspace returns the currently focused workspace.
+//
+// It is equivalent to running the command:
+//
+//	aerospace list-workspaces --focused --json
+//
+// The result differs from the `list-workspaces` command by only returning
+// the focused workspace.
+//
+// Usage:
+//
+//	worskspace, err := aerospace.GetFocusedWorkspace()
+//	fmt.Println("Worskspace:", worskspace)
+//	fmt.Println("Error:", err)
+//
+// More:
+// https://github.com/cristianoliveira/aerospace-ipc/tree/main/examples
 func (a *AeroSpaceWM) GetFocusedWorkspace() (*Workspace, error) {
-	response, err := a.Conn.SendCommand("list-workspaces", []string{"--focused", "--json"})
+	response, err := a.Conn.SendCommand(
+		"list-workspaces",
+		[]string{
+			"--focused",
+			"--json",
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +64,21 @@ func (a *AeroSpaceWM) GetFocusedWorkspace() (*Workspace, error) {
 	return &workspaces[0], nil
 }
 
+// MoveWindowToWorkspace moves a window to a specified workspace.
+//
+// It is equivalent to running the command:
+//
+//	aerospace move-node-to-workspace <workspace> --window-id <window-id>
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	err := aerospace.MoveWindowToWorkspace(12345, "my-workspace")
+//	fmt.Println("Error:", err)
+//
+// More:
+// https://github.com/cristianoliveira/aerospace-ipc/tree/main/examples
 func (a *AeroSpaceWM) MoveWindowToWorkspace(windowID int, workspaceName string) error {
 	response, err := a.Conn.SendCommand(
 		"move-node-to-workspace",

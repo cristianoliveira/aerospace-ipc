@@ -1,9 +1,9 @@
-package aerospace
+package client
 
 import (
 	"fmt"
 
-	"github.com/cristianoliveira/aerospace-ipc/client"
+	"github.com/cristianoliveira/aerospace-ipc/internal/socket"
 )
 
 // Connector should return AeroSpaceConnectiono
@@ -16,7 +16,7 @@ import (
 // It allows one to set their custom connector if needed, for testing or other purposes.
 type AeroSpaceConnector interface {
 	// Connect to the AeroSpace Socket and return client
-	Connect() (client.AeroSpaceSocketConn, error)
+	Connect() (AeroSpaceSocketConn, error)
 }
 
 // AeroSpaceDefaultConnector is the default implementation of AeroSpaceConnector.
@@ -24,13 +24,13 @@ type AeroSpaceConnector interface {
 // In most cases, you will use this connector to connect to the AeroSpace socket.
 type AeroSpaceDefaultConnector struct{}
 
-func (c *AeroSpaceDefaultConnector) Connect() (client.AeroSpaceSocketConn, error) {
-	socketPath, err := GetSocketPath()
+func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceSocketConn, error) {
+	socketPath, err := socket.GetSocketPath()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get socket path\n %w", err)
 	}
 
-	client, err := client.NewAeroSpaceSocketConnection(socketPath)
+	client, err := NewAeroSpaceSocketConnection(socketPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to creat socket connection\n%w", err)
 	}
@@ -48,12 +48,12 @@ type AeroSpaceCustomConnector struct {
 	ValidateVersion bool
 }
 
-func (c *AeroSpaceCustomConnector) Connect() (client.AeroSpaceSocketConn, error) {
+func (c *AeroSpaceCustomConnector) Connect() (AeroSpaceSocketConn, error) {
 	if c.SocketPath == "" {
 		return nil, fmt.Errorf("socket path cannot be empty")
 	}
 
-	client, err := client.NewAeroSpaceSocketConnection(c.SocketPath)
+	client, err := NewAeroSpaceSocketConnection(c.SocketPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to creat socket connection\n%w", err)
 	}
@@ -84,6 +84,8 @@ func SetDefaultConnector(connector AeroSpaceConnector) {
 }
 
 // GetDefaultConnector returns the default AeroSpaceConnector.
+// Returns a connector to create a connection to the AeroSpace socket.
+// It panics if the default connector is not initialized.
 func GetDefaultConnector() AeroSpaceConnector {
 	if defaultConnector == nil {
 		panic("ASSERTION: Default connector is not initialized")

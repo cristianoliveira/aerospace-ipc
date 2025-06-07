@@ -66,6 +66,7 @@ func (c *AeroSpaceSocketConnection) GetSocketPath() (string, error) {
 	return c.socketPath, nil
 }
 
+// CloseConnection closes the connection to the AeroSpace socket.
 func (c *AeroSpaceSocketConnection) CloseConnection() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -107,7 +108,13 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) err
 	return nil
 }
 
-// SendCommand sends a command to the AeroSpace window manager via Unix socket and returns the response.
+// SendCommand sends a raw command to the AeroSpace socket and returns a raw response.
+//
+// It is equivalent to running the command:
+//
+//	aerospace <command> <args...>
+//
+// Returns a Response struct containing the server version, standard error, standard output, and exit code.
 func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (*Response, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
