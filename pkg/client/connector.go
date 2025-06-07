@@ -84,6 +84,8 @@ func SetDefaultConnector(connector AeroSpaceConnector) {
 }
 
 // GetDefaultConnector returns the default AeroSpaceConnector.
+// Returns a connector to create a connection to the AeroSpace socket.
+// It panics if the default connector is not initialized.
 func GetDefaultConnector() AeroSpaceConnector {
 	if defaultConnector == nil {
 		panic("ASSERTION: Default connector is not initialized")

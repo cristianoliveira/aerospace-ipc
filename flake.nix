@@ -17,6 +17,9 @@
 
             golangci-lint
 
+            # Allow to run `godoc -http=:4444`
+            gotools
+
             # To create new subcommands, run:
             # cobra-cli add <subcommand-name>
             cobra-cli

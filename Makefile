@@ -69,3 +69,8 @@ nix-build-all: nix-build-source nix-build-nightly nix-build ## Build all using N
 git-hooks-pre-push: ## Set up git hooks and run
 	echo "Pre-push git hooks set up"
 	bash scripts/git-hooks/pre-push
+
+.PHONY: docs-serve
+docs-serve: ## Run the golang docs server on localhost:4444
+	@echo "Running the golang docs server on localhost:4444..."
+	@godoc -http=:4444

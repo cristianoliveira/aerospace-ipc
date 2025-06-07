@@ -15,60 +15,26 @@ type AeroSpaceClient interface {
 	// Windows Methods
 
 	// GetAllWindows returns all windows currently managed by the window manager.
-	//
-	// It is equivalent to running the command:
-	//   aerospace list-windows --all --json
-	//
-	// The result is returned a list of Window structs.
 	GetAllWindows() ([]Window, error)
 
 	// GetAllWindowsByWorkspace returns all windows in a specified workspace.
-	//
-	// It is equivalent to running the command:
-	//   aerospace list-windows --workspace <workspace> --json
-	//
-	// The result is returned as a list of Window structs.
 	GetAllWindowsByWorkspace(workspaceName string) ([]Window, error)
 
 	// GetFocusedWindow returns the currently focused window.
-	//
-	// It is equivalent to running the command:
-	//   aerospace list-windows --focused --json
-	//
-	// The result is returned as a Window struct.
 	GetFocusedWindow() (*Window, error)
 
 	// SetFocusByWindowID sets the focus to a window specified by its ID.
-	//
-	// It is equivalent to running the command:
-	//   aerospace focus --window-id <window-id>
-	//
-	// Returns an error if the operation fails.
 	SetFocusByWindowID(windowID int) error
 
 	// GetFocusedWorkspace returns the currently focused workspace.
-	//
-	// It is equivalent to running the command:
-	//   aerospace list-workspaces --focused --json
-	//
-	// The result is returned as a Workspace struct.
 	GetFocusedWorkspace() (*Workspace, error)
 
 	// MoveWindowToWorkspace moves a window to a specified workspace.
-	//
-	// It is equivalent to running the command:
-	//   aerospace move-node-to-workspace <workspace> --window-id <window-id>
-	//
-	// Returns an error if the operation fails.
 	MoveWindowToWorkspace(windowID int, workspaceName string) error
 
 	// Layout Methods
+
 	// SetLayout sets the layout for a specified window.
-	//
-	// It is equivalent to running the command:
-	//   aerospace layout <floating|tiled> --window-id <window-id>
-	//
-	// Returns an error if the operation fails.
 	SetLayout(windowID int, layout string) error
 
 	// Connection Methods
@@ -112,6 +78,17 @@ func (a *AeroSpaceWM) CloseConnection() error {
 //	Default: /tmp/bobko.aerospace-<username>.sock
 //
 // Returns an AeroSpaceWM client or an error if the connection fails.
+//
+// Usage:
+//
+//	client, err := aerospace.NewAeroSpaceClient()
+//	if err != nil {
+//	    log.Fatalf("failed to create AeroSpace client: %v", err)
+//	}
+//	defer client.CloseConnection()
+//
+// More:
+// https://github.com/cristianoliveira/aerospace-ipc/tree/main/examples
 func NewAeroSpaceConnection() (*AeroSpaceWM, error) {
 	conn, err := client.GetDefaultConnector().Connect()
 	if err != nil {
@@ -133,6 +110,22 @@ type AeroSpaceCustomConnectionOpts struct {
 }
 
 // NewAeroSpaceCustomConnection creates a new AeroSpaceClient with a custom socket path.
+//
+// It allows specifying a custom socket path and whether to validate the version.
+// Returns an AeroSpaceWM client or an error if the connection fails.
+// Usage:
+//
+//	client, err := aerospace.NewAeroSpaceCustomConnection(aerospace.AeroSpaceCustomConnectionOpts{
+//	    SocketPath:      "/path/to/custom/socket",
+//	    ValidateVersion: true, // Set to true to validate the server version
+//	})
+//	if err != nil {
+//	    log.Fatalf("failed to create AeroSpace client: %v", err)
+//	}
+//	defer client.CloseConnection()
+//
+// More:
+// https://github.com/cristianoliveira/aerospace-ipc/tree/main/examples
 func NewAeroSpaceCustomConnection(opts AeroSpaceCustomConnectionOpts) (*AeroSpaceWM, error) {
 	if opts.SocketPath == "" {
 		return nil, fmt.Errorf("socket path cannot be empty")
