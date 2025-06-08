@@ -14,7 +14,7 @@ import (
 
 func main() {
 	socketPath := fmt.Sprintf("/tmp/bobko.%s-%s.sock", "aerospace", os.Getenv("USER"))
-	client, err := aerospace.NewAeroSpaceCustomConnection(
+	client, err := aerospace.NewAeroSpaceCustomClient(
 		aerospace.AeroSpaceCustomConnectionOpts{
 			SocketPath:      socketPath,
 			ValidateVersion: true,
@@ -27,7 +27,11 @@ func main() {
 			log.Fatalf("Failed to connect: %v", err)
 		}
 	}
-	defer client.CloseConnection()
+	defer func() {
+		if err := client.CloseConnection(); err != nil {
+			log.Fatalf("Failed to close connection: %v", err)
+		}
+	}()
 
 	windows, err := client.GetAllWindows()
 	if err != nil {

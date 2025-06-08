@@ -8,10 +8,15 @@ import (
 )
 
 func main() {
-	conn, err := client.NewAeroSpaceConnection()
+	conn, err := client.NewAeroSpaceClient()
 	if err != nil {
 		log.Fatalf("Error creating connection: %v", err)
 	}
+	defer func() {
+		if err := conn.CloseConnection(); err != nil {
+			log.Fatalf("Error closing connection: %v", err)
+		}
+	}()
 
 	var wg sync.WaitGroup
 	numGoroutines := 5
