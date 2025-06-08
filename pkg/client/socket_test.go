@@ -54,7 +54,7 @@ func TestSocketClient(t *testing.T) {
 			serverVersion:   "1.10.0-beta xxxxx",
 			expectation: func(t *testing.T, err error) {
 				if err != nil {
-					t.Fatalf("expected error about minimum version, got nil")
+					t.Fatalf("expected no error, got %v", err)
 				}
 			},
 		},
@@ -81,7 +81,6 @@ func TestSocketClient(t *testing.T) {
 
 			mockConn := net_mock.NewMockConn(ctrl)
 
-			// Simulate returning "hello\n" on Read
 			readCount := 0
 			gomock.InOrder(
 				mockConn.EXPECT().
@@ -95,9 +94,9 @@ func TestSocketClient(t *testing.T) {
 							n := copy(p, cmdBytes)
 							readCount++
 							if readCount == 1 {
-								return n, nil // Simulate successful read
+								return n, nil
 							}
-							return n, io.EOF // or nil if you want to simulate not-closed connection
+							return n, io.EOF
 						},
 					).
 					Times(1),

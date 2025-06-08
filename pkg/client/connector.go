@@ -8,7 +8,7 @@ import (
 
 // AeroSpaceConnector is an interface for connecting to the AeroSpace socket.
 //
-// It provides a method to establish a connection and return an AeroSpaceSocketConn.
+// It provides a method to establish a connection and return an AeroSpaceConnection.
 //
 //	See: AeroSpaceDefaultConnector for the default implementation.
 //
