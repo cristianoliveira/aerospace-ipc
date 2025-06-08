@@ -29,7 +29,7 @@ type Response struct {
 
 // AeroSpaceConnection is an interface interacting with a AeroSpace socket.
 //
-// It provides methos to execute low-level commands and manage the connection.
+// It provides methods to execute low-level commands and manage the connection.
 type AeroSpaceConnection interface {
 	// CloseConnection closes the connection to the AeroSpace socket.
 	CloseConnection() error

@@ -55,7 +55,9 @@ type AeroSpaceWM struct {
 	Conn client.AeroSpaceConnection
 }
 
-func (a *AeroSpaceWM) Client() client.AeroSpaceConnection {
+// Connection returns the AeroSpaceConnection
+// which allows low-level interaction with the AeroSpace socket.
+func (a *AeroSpaceWM) Connection() client.AeroSpaceConnection {
 	if a.Conn == nil {
 		panic("ASSERTION: AeroSpaceWM client is not initialized")
 	}
