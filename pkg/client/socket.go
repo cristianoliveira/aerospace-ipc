@@ -58,6 +58,9 @@ type AeroSpaceSocketConnection struct {
 	Conn            *net.Conn
 }
 
+// GetSocketPath returns the socket path for the AeroSpace connection.
+//
+// It returns an error if the socket path is not set.
 func (c *AeroSpaceSocketConnection) GetSocketPath() (string, error) {
 	if c.socketPath == "" {
 		return "", fmt.Errorf("missing socket path")
@@ -67,6 +70,8 @@ func (c *AeroSpaceSocketConnection) GetSocketPath() (string, error) {
 }
 
 // CloseConnection closes the connection to the AeroSpace socket.
+//
+// It returns an error if the connection cannot be closed.
 func (c *AeroSpaceSocketConnection) CloseConnection() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -115,6 +120,16 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) err
 //	aerospace <command> <args...>
 //
 // Returns a Response struct containing the server version, standard error, standard output, and exit code.
+//
+// Usage:
+//
+//	response, err := client.SendCommand("list-windows", []string{"--all", "--json"})
+//	if err != nil {
+//	  fmt.Println("Error:", err)
+//	}
+//	fmt.Println("Server Version:", response.ServerVersion)
+//	fmt.Println("Standard Output:", response.StdOut)
+//	fmt.Println("Standard Error:", response.StdErr)
 func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (*Response, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()

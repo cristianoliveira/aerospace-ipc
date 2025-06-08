@@ -34,8 +34,8 @@ type Workspace struct {
 //
 // Usage:
 //
-//	worskspace, err := aerospace.GetFocusedWorkspace()
-//	fmt.Println("Worskspace:", worskspace)
+//	workspace, err := aerospace.GetFocusedWorkspace()
+//	fmworkspace.Prworkspacentln("Workspace:", workspace)
 //	fmt.Println("Error:", err)
 //
 // More:
