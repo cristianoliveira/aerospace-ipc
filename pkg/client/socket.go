@@ -140,6 +140,7 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) err
 }
 
 // SendCommand sends a raw command to the AeroSpace socket and returns a raw response.
+// It allows to execute commands that are not directly supported by the client library.
 //
 // It is equivalent to running the command:
 //
