@@ -42,7 +42,7 @@ type AeroSpaceClient interface {
 	// Client returns the AeroSpaceWM client.
 	//
 	// Returns the AeroSpaceSocketConn interface for further operations.
-	Client() client.AeroSpaceSocketConn
+	Client() client.AeroSpaceConnection
 
 	// CloseConnection closes the AeroSpaceWM connection and releases resources.
 	//
@@ -52,10 +52,10 @@ type AeroSpaceClient interface {
 
 // AeroSpaceWM implements the AeroSpaceClient interface.
 type AeroSpaceWM struct {
-	Conn client.AeroSpaceSocketConn
+	Conn client.AeroSpaceConnection
 }
 
-func (a *AeroSpaceWM) Client() client.AeroSpaceSocketConn {
+func (a *AeroSpaceWM) Client() client.AeroSpaceConnection {
 	if a.Conn == nil {
 		panic("ASSERTION: AeroSpaceWM client is not initialized")
 	}
@@ -89,7 +89,7 @@ func (a *AeroSpaceWM) CloseConnection() error {
 //
 // More:
 // https://github.com/cristianoliveira/aerospace-ipc/tree/main/examples
-func NewAeroSpaceConnection() (*AeroSpaceWM, error) {
+func NewAeroSpaceClient() (*AeroSpaceWM, error) {
 	conn, err := client.GetDefaultConnector().Connect()
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
@@ -109,13 +109,13 @@ type AeroSpaceCustomConnectionOpts struct {
 	ValidateVersion bool
 }
 
-// NewAeroSpaceCustomConnection creates a new AeroSpaceClient with a custom socket path.
+// NewAeroSpaceCustomClient creates a new AeroSpaceClient with a custom socket path.
 //
 // It allows specifying a custom socket path and whether to validate the version.
 // Returns an AeroSpaceWM client or an error if the connection fails.
 // Usage:
 //
-//	client, err := aerospace.NewAeroSpaceCustomConnection(aerospace.AeroSpaceCustomConnectionOpts{
+//	client, err := aerospace.NewAeroSpaceCustomClient(aerospace.AeroSpaceCustomConnectionOpts{
 //	    SocketPath:      "/path/to/custom/socket",
 //	    ValidateVersion: true, // Set to true to validate the server version
 //	})
@@ -126,7 +126,7 @@ type AeroSpaceCustomConnectionOpts struct {
 //
 // More:
 // https://github.com/cristianoliveira/aerospace-ipc/tree/main/examples
-func NewAeroSpaceCustomConnection(opts AeroSpaceCustomConnectionOpts) (*AeroSpaceWM, error) {
+func NewAeroSpaceCustomClient(opts AeroSpaceCustomConnectionOpts) (*AeroSpaceWM, error) {
 	if opts.SocketPath == "" {
 		return nil, fmt.Errorf("socket path cannot be empty")
 	}
