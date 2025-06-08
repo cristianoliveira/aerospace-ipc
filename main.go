@@ -37,12 +37,12 @@ type AeroSpaceClient interface {
 	// SetLayout sets the layout for a specified window.
 	SetLayout(windowID int, layout string) error
 
-	// Connection Methods
+	// Low-Level Client Methods
 
-	// Client returns the AeroSpaceWM client.
+	// Connection returns the AeroSpaceWM client.
 	//
 	// Returns the AeroSpaceSocketConn interface for further operations.
-	Client() client.AeroSpaceConnection
+	Connection() client.AeroSpaceConnection
 
 	// CloseConnection closes the AeroSpaceWM connection and releases resources.
 	//
