@@ -249,7 +249,7 @@ func (c *AeroSpaceWM) SetFocusByWindowID(windowID int) error {
 // https://github.com/cristianoliveira/aerospace-ipc/tree/main/examples
 func (a *AeroSpaceWM) SetLayout(windowID int, layout string) error {
 	windowStr := fmt.Sprintf("%d", windowID)
-	if res, err := a.Conn.SendCommand(
+	if _, err := a.Conn.SendCommand(
 		"layout",
 		[]string{
 			layout,
@@ -257,10 +257,10 @@ func (a *AeroSpaceWM) SetLayout(windowID int, layout string) error {
 		},
 	); err != nil {
 		return fmt.Errorf(
-			"failed to set layout for window %d\n%w\n%s",
+			"failed to set layout '%s' for window %d\nReason:%w",
+			layout,
 			windowID,
 			err,
-			res.StdOut,
 		)
 	}
 
