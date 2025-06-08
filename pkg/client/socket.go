@@ -49,7 +49,7 @@ type AeroSpaceConnection interface {
 	GetServerVersion() (string, error)
 
 	// CheckServerVersion validates the version of the AeroSpace server.
-	CheckServerVersion(serverVersion string) error
+	CheckServerVersion() error
 }
 
 // AeroSpaceSocketConnection implements the AeroSpaceSocketConn interface.
@@ -58,7 +58,7 @@ type AeroSpaceSocketConnection struct {
 	socketPath      string
 	MinMajorVersion int
 	MinMinorVersion int
-	Conn            *net.Conn
+	Conn            net.Conn
 }
 
 // GetSocketPath returns the socket path for the AeroSpace connection.
@@ -79,7 +79,7 @@ func (c *AeroSpaceSocketConnection) CloseConnection() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.Conn != nil {
-		err := (*c.Conn).Close()
+		err := (c.Conn).Close()
 		if err != nil {
 			return fmt.Errorf("failed to close connection\n %w", err)
 		}
@@ -90,8 +90,6 @@ func (c *AeroSpaceSocketConnection) CloseConnection() error {
 // GetServerVersion retrieves the version of the AeroSpace server.
 // It sends a command to the server to get its version and returns it.
 func (c *AeroSpaceSocketConnection) GetServerVersion() (string, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 	if c.Conn == nil {
 		return "", fmt.Errorf("connection is not established")
 	}
@@ -110,9 +108,12 @@ func (c *AeroSpaceSocketConnection) GetServerVersion() (string, error) {
 
 // CheckServerVersion checks if the server version meets the minimum requirements.
 // It compares the server version against the minimum major and minor versions.
-func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+func (c *AeroSpaceSocketConnection) CheckServerVersion() error {
+	serverVersion, err := c.GetServerVersion()
+	if err != nil {
+		return fmt.Errorf("failed to get server version\n%w", err)
+	}
+
 	if serverVersion == "" {
 		return fmt.Errorf("server version is empty")
 	}
@@ -127,7 +128,13 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) err
 		return fmt.Errorf("failed to parse major version from %s\n%w", serverVersion, err)
 	}
 
-	if intMajor > c.MinMajorVersion {
+	intMinor, err := strconv.Atoi(versionParts[1])
+	if err != nil {
+		return fmt.Errorf("failed to parse minor version from %s\n%w", serverVersion, err)
+	}
+
+	if intMajor != c.MinMajorVersion ||
+		intMajor == c.MinMajorVersion && intMinor != c.MinMinorVersion {
 		versionJoined := strings.Join(versionParts, ".")
 		return exceptions.NewErrVersionMismatch(
 			c.MinMajorVersion,
@@ -177,7 +184,7 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 		return nil, fmt.Errorf("failed to marshal command\n%w", err)
 	}
 
-	_, err = (*c.Conn).Write(cmdBytes)
+	_, err = c.Conn.Write(cmdBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send command\n%w", err)
 	}
@@ -185,7 +192,7 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 	var responseData []byte
 	buf := make([]byte, 4096)
 	for {
-		n, err := (*c.Conn).Read(buf)
+		n, err := c.Conn.Read(buf)
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -239,7 +246,7 @@ func NewAeroSpaceSocketConnection(socketPath string) (*AeroSpaceSocketConnection
 		socketPath:      socketPath,
 		MinMajorVersion: 1, // Example version, adjust as needed
 		MinMinorVersion: 0,
-		Conn:            &conn,
+		Conn:            conn,
 	}
 
 	return client, nil
