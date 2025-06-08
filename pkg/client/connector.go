@@ -58,7 +58,7 @@ func (c *AeroSpaceCustomConnector) Connect() (AeroSpaceConnection, error) {
 
 	client, err := NewAeroSpaceSocketConnection(c.SocketPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to creat socket connection\n%w", err)
+		return nil, fmt.Errorf("failed to create a socket connection\n%w", err)
 	}
 
 	if c.ValidateVersion {
