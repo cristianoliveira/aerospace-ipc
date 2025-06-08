@@ -45,6 +45,9 @@ type AeroSpaceConnection interface {
 	// GetSocketPath returns the socket path for the AeroSpace connection.
 	GetSocketPath() (string, error)
 
+	// GetServerVersion returns the version of the AeroSpace server.
+	GetServerVersion() (string, error)
+
 	// CheckServerVersion validates the version of the AeroSpace server.
 	CheckServerVersion(serverVersion string) error
 }
@@ -84,6 +87,29 @@ func (c *AeroSpaceSocketConnection) CloseConnection() error {
 	return nil
 }
 
+// GetServerVersion retrieves the version of the AeroSpace server.
+// It sends a command to the server to get its version and returns it.
+func (c *AeroSpaceSocketConnection) GetServerVersion() (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.Conn == nil {
+		return "", fmt.Errorf("connection is not established")
+	}
+	// Send the command to get the server version
+	res, err := c.SendCommand("config", []string{"--config-path"})
+	if err != nil {
+		return "", fmt.Errorf("failed to get server version\n%w", err)
+	}
+
+	if res.ExitCode != 0 {
+		return "", fmt.Errorf("failed to get server version\n%s", res.StdErr)
+	}
+
+	return res.ServerVersion, nil
+}
+
+// CheckServerVersion checks if the server version meets the minimum requirements.
+// It compares the server version against the minimum major and minor versions.
 func (c *AeroSpaceSocketConnection) CheckServerVersion(serverVersion string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
