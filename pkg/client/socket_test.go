@@ -34,7 +34,7 @@ func TestSocketClient(t *testing.T) {
 			},
 		},
 		{
-			title:           "CheckServerVersion - fails when minor different than minimum version",
+			title:           "CheckServerVersion - fails when minor isn't greater than to minimum minor version",
 			minMajorVersion: 1,
 			minMinorVersion: 12,
 			serverVersion:   "1.10.0-beta xxxxx",

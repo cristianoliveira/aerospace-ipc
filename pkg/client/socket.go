@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/cristianoliveira/aerospace-ipc/internal/constants"
 	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
 
@@ -134,7 +135,7 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion() error {
 	}
 
 	if intMajor != c.MinMajorVersion ||
-		intMajor == c.MinMajorVersion && intMinor != c.MinMinorVersion {
+		intMajor == c.MinMajorVersion && intMinor < c.MinMinorVersion {
 		versionJoined := strings.Join(versionParts, ".")
 		return exceptions.NewErrVersionMismatch(
 			c.MinMajorVersion,
@@ -244,8 +245,8 @@ func NewAeroSpaceSocketConnection(socketPath string) (*AeroSpaceSocketConnection
 
 	client := &AeroSpaceSocketConnection{
 		socketPath:      socketPath,
-		MinMajorVersion: 1, // Example version, adjust as needed
-		MinMinorVersion: 0,
+		MinMajorVersion: constants.AeroSpaceSocketClientMajor,
+		MinMinorVersion: constants.AeroSpaceSocketClientMinor,
 		Conn:            conn,
 	}
 
