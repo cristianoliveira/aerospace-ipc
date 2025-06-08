@@ -10,7 +10,7 @@ import (
 
 func TestIntegration(t *testing.T) {
 	t.Run("ipc.GetAllWindows: retrieves all windows", func(t *testing.T) {
-		client, err := ipc.NewAeroSpaceConnection()
+		client, err := ipc.NewAeroSpaceClient()
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -27,7 +27,7 @@ func TestIntegration(t *testing.T) {
 	})
 
 	t.Run("ipc.Client().GetSocketPath: retrieves the socket path", func(t *testing.T) {
-		client, err := ipc.NewAeroSpaceConnection()
+		client, err := ipc.NewAeroSpaceClient()
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}

@@ -27,10 +27,10 @@ type Response struct {
 	ExitCode      int32  `json:"exitCode"`
 }
 
-// AeroSpaceSocketConn is an interface interacting with a AeroSpace socket.
+// AeroSpaceConnection is an interface interacting with a AeroSpace socket.
 //
 // It provides methos to execute low-level commands and manage the connection.
-type AeroSpaceSocketConn interface {
+type AeroSpaceConnection interface {
 	// CloseConnection closes the connection to the AeroSpace socket.
 	CloseConnection() error
 

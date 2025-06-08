@@ -16,7 +16,7 @@ import (
 // It allows one to set their custom connector if needed, for testing or other purposes.
 type AeroSpaceConnector interface {
 	// Connect to the AeroSpace Socket and return client
-	Connect() (AeroSpaceSocketConn, error)
+	Connect() (AeroSpaceConnection, error)
 }
 
 // AeroSpaceDefaultConnector is the default implementation of AeroSpaceConnector.
@@ -24,7 +24,7 @@ type AeroSpaceConnector interface {
 // In most cases, you will use this connector to connect to the AeroSpace socket.
 type AeroSpaceDefaultConnector struct{}
 
-func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceSocketConn, error) {
+func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceConnection, error) {
 	socketPath, err := socket.GetSocketPath()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get socket path\n %w", err)
@@ -52,7 +52,7 @@ type AeroSpaceCustomConnector struct {
 // with the minimum required version.
 //
 // It returns an AeroSpaceSocketConn or an error if the connection fails.
-func (c *AeroSpaceCustomConnector) Connect() (AeroSpaceSocketConn, error) {
+func (c *AeroSpaceCustomConnector) Connect() (AeroSpaceConnection, error) {
 	if c.SocketPath == "" {
 		return nil, fmt.Errorf("socket path cannot be empty")
 	}
