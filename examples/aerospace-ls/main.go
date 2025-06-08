@@ -8,11 +8,15 @@ import (
 )
 
 func main() {
-	client, err := aerospace.NewAeroSpaceConnection()
+	client, err := aerospace.NewAeroSpaceClient()
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
-	defer client.CloseConnection()
+	defer func() {
+		if err := client.CloseConnection(); err != nil {
+			log.Fatalf("Failed to close connection: %v", err)
+		}
+	}()
 
 	windows, err := client.GetAllWindows()
 	if err != nil {
