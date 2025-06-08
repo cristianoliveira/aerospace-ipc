@@ -48,6 +48,10 @@ type AeroSpaceCustomConnector struct {
 	ValidateVersion bool
 }
 
+// Connect establishes a connection to the AeroSpace socket and validates the server version
+// with the minimum required version.
+//
+// It returns an AeroSpaceSocketConn or an error if the connection fails.
 func (c *AeroSpaceCustomConnector) Connect() (AeroSpaceSocketConn, error) {
 	if c.SocketPath == "" {
 		return nil, fmt.Errorf("socket path cannot be empty")
