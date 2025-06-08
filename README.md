@@ -39,9 +39,9 @@ To use the library, import it into your Go project and create a new AeroSpace co
 
 ```go
 import (
-	"errors"
-	"fmt"
-	"log"
+    "errors"
+    "fmt"
+    "log"
 
     aerospacecli "github.com/cristianoliveira/aerospace-ipc"
 )
@@ -49,14 +49,19 @@ import (
 func main() {
     client, err := aerospacecli.NewAeroSpaceConnection()
     if err != nil {
-        // Your choice here, the client will return but there might be incompatibilities
+        log.Fatalf("Failed to connect: %v", err)
+    }
+    defer client.CloseConnection()
+
+    // This isn't strictly necessary, but it's a good practice to check the server version
+    err = client.Connection().CheckServerVersion()
+    if err != nil {
         if error.Is(err, aerospacecli.ErrVersionMismatch) {
             fmt.Printf("[WARN] %s\n", err)
         } else {
             log.Fatalf("Failed to connect: %v", err)
         }
     }
-    defer client.CloseConnection()
 
     windows, err := client.GetAllWindows()
     if err != nil {
