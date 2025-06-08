@@ -32,7 +32,7 @@ func TestIntegration(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		path, err := client.Client().GetSocketPath()
+		path, err := client.Connection().GetSocketPath()
 		if err != nil {
 			t.Fatalf("expected no error, got '%v'", err)
 		}
