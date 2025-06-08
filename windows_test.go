@@ -65,7 +65,7 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		windowsResponse := []Window{
@@ -113,7 +113,7 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		windowsResponse := []Window{
@@ -161,7 +161,7 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		focusedWindowResponse := []Window{
@@ -201,7 +201,7 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		mockConn.EXPECT().
@@ -229,7 +229,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		mockConn.EXPECT().
@@ -253,7 +253,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		var workspaceName = "nonexistent-workspace"
@@ -278,7 +278,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		mockConn.EXPECT().
@@ -302,7 +302,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		focusedWindowResponse := []Window{}
@@ -336,7 +336,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 		ctrl := gomock.NewController(tt)
 		defer ctrl.Finish()
 
-		mockConn := mock_client.NewMockAeroSpaceSocketConn(ctrl)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
 
 		mockConn.EXPECT().
