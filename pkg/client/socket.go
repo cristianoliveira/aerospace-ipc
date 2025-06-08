@@ -79,7 +79,7 @@ func (c *AeroSpaceSocketConnection) CloseConnection() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.Conn != nil {
-		err := (c.Conn).Close()
+		err := c.Conn.Close()
 		if err != nil {
 			return fmt.Errorf("failed to close connection\n %w", err)
 		}
