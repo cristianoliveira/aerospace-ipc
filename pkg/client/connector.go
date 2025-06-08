@@ -6,7 +6,6 @@ import (
 	"github.com/cristianoliveira/aerospace-ipc/internal/socket"
 )
 
-// Connector should return AeroSpaceConnectiono
 // AeroSpaceConnector is an interface for connecting to the AeroSpace socket.
 //
 // It provides a method to establish a connection and return an AeroSpaceSocketConn.
@@ -62,12 +61,12 @@ func (c *AeroSpaceCustomConnector) Connect() (AeroSpaceConnection, error) {
 		return nil, fmt.Errorf("failed to creat socket connection\n%w", err)
 	}
 
-	response, err := client.SendCommand("config", []string{"--config-path"})
-	if err != nil {
-		return nil, fmt.Errorf("failed communicate with server\n%w", err)
-	}
-
 	if c.ValidateVersion {
+		response, err := client.SendCommand("config", []string{"--config-path"})
+		if err != nil {
+			return nil, fmt.Errorf("failed communicate with server\n%w", err)
+		}
+
 		if err := client.CheckServerVersion(response.ServerVersion); err != nil {
 			return client, err
 		}
