@@ -62,12 +62,7 @@ func (c *AeroSpaceCustomConnector) Connect() (AeroSpaceConnection, error) {
 	}
 
 	if c.ValidateVersion {
-		response, err := client.SendCommand("config", []string{"--config-path"})
-		if err != nil {
-			return nil, fmt.Errorf("failed communicate with server\n%w", err)
-		}
-
-		if err := client.CheckServerVersion(response.ServerVersion); err != nil {
+		if err := client.CheckServerVersion(); err != nil {
 			return client, err
 		}
 	}

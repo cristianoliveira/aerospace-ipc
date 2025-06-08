@@ -41,17 +41,17 @@ func (m *MockAeroSpaceConnection) EXPECT() *MockAeroSpaceConnectionMockRecorder 
 }
 
 // CheckServerVersion mocks base method.
-func (m *MockAeroSpaceConnection) CheckServerVersion(serverVersion string) error {
+func (m *MockAeroSpaceConnection) CheckServerVersion() error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckServerVersion", serverVersion)
+	ret := m.ctrl.Call(m, "CheckServerVersion")
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CheckServerVersion indicates an expected call of CheckServerVersion.
-func (mr *MockAeroSpaceConnectionMockRecorder) CheckServerVersion(serverVersion any) *gomock.Call {
+func (mr *MockAeroSpaceConnectionMockRecorder) CheckServerVersion() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckServerVersion", reflect.TypeOf((*MockAeroSpaceConnection)(nil).CheckServerVersion), serverVersion)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckServerVersion", reflect.TypeOf((*MockAeroSpaceConnection)(nil).CheckServerVersion))
 }
 
 // CloseConnection mocks base method.
