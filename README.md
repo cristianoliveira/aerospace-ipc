@@ -3,21 +3,37 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/cristianoliveira/aerospace-ipc.svg)](https://pkg.go.dev/github.com/cristianoliveira/aerospace-ipc)
 [![Quick Checks](https://github.com/cristianoliveira/aerospace-ipc/actions/workflows/on-push.yml/badge.svg)](https://github.com/cristianoliveira/aerospace-ipc/actions/workflows/on-push.yml)
 
-A Go library for interacting with the AeroSpace window manager via IPC
+A Go library for interacting with [AeroSpace WM](https://github.com/nikitabobko/AeroSpace) via IPC
 
 *Minimum AeroSpace version:* `v0.15.x`
 
 ## Description
 
-This package allows interaction with the AeroSpace window manager using a Unix socket. 
-The socket is typically located at `/tmp/\(aeroSpaceAppId)-\(unixUserName).sock` ([see](https://github.com/nikitabobko/AeroSpace/blob/f12ee6c9d914f7b561ff7d5c64909882c67061cd/Sources/AppBundle/server.swift#L9)).
+This package allows interacting with [AeroSpace WM](https://github.com/nikitabobko/AeroSpace) via IPC.
+It uses the available Unix Socket to communicate. The socket is typically located at `/tmp/\(aeroSpaceAppId)-\(unixUserName).sock` ([see](https://github.com/nikitabobko/AeroSpace/blob/f12ee6c9d914f7b561ff7d5c64909882c67061cd/Sources/AppBundle/server.swift#L9)).
 
 ## Features
 
-- Connect to the AeroSpace window manager via Unix socket.
-- Send commands and receive responses in mapped types.
-- Send raw commands and receive responses in pure JSON format.
-- Manage windows and workspaces programmatically.
+As of now, this library only covers the functionality necessary for implementing
+[aerospace-marks](https://github.com/cristianoliveira/aerospace-marks) and [aerospace-scratchpad](https://github.com/cristianoliveira/aerospace-scratchpad) which is:
+
+    - Windows
+        - Get all windows
+        - Get focused window
+        - Get window by ID
+        - Get windows by workspace
+        - Move window to workspace
+        - Set window layout
+ 
+    - Workspaces
+        - Get focused workspace
+        - Move workspace to another workspace
+
+For the remaining functionality, this library exposes the SocketClient interface, which allows you to send raw commands and receive responses in pure JSON format.
+
+See [documentation](https://pkg.go.dev/github.com/cristianoliveira/aerospace-ipc) for the full list of available methods.
+
+If you need a specific functionality that is not yet implemented, feel free to open an issue or a pull request.
 
 ## When to use this library
 
@@ -83,9 +99,3 @@ Contributions are welcome! Please fork the repository and submit a pull request.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Thanks to the AeroSpace WM maintainers for their support and documentation.
-- Inspired by the need for efficient window management solutions.
-- This library is heavily inspired by [go-i3](https://github.com/i3/go-i3)
