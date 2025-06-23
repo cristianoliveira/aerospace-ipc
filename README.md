@@ -29,7 +29,7 @@ As of now, this library only covers the functionality necessary for implementing
         - Get focused workspace
         - Move workspace to another workspace
 
-For the remaining functionality, this library exposes the SocketClient interface, which allows you to send raw commands and receive responses in pure JSON format.
+For the remaining functionality, this library exposes [a SocketClient interface](https://github.com/cristianoliveira/aerospace-ipc/blob/b02bec38820a70895785880b60002a4cf6d5a09b/pkg/client/socket.go#L34), which allows you to send raw commands and receive responses in pure JSON format.
 
 See [documentation](https://pkg.go.dev/github.com/cristianoliveira/aerospace-ipc) for the full list of available methods.
 
