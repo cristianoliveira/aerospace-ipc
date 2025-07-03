@@ -86,7 +86,7 @@ func (c *AeroSpaceWM) GetAllWindows() ([]Window, error) {
 		[]string{
 			"--all",
 			"--json",
-			"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+			"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 		},
 	)
 	if err != nil {
@@ -127,7 +127,7 @@ func (c *AeroSpaceWM) GetAllWindowsByWorkspace(workspaceName string) ([]Window, 
 		[]string{
 			"--workspace", workspaceName,
 			"--json",
-			"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+			"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 		},
 	)
 	if err != nil {
@@ -169,7 +169,7 @@ func (c *AeroSpaceWM) GetFocusedWindow() (*Window, error) {
 		[]string{
 			"--focused",
 			"--json",
-			"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+			"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 		},
 	)
 	if err != nil {

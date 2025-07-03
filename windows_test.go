@@ -82,7 +82,7 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 				[]string{
 					"--all",
 					"--json",
-					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+					"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 				},
 			).
 			Return(
@@ -130,7 +130,7 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 				[]string{
 					"--workspace", "my-workspace",
 					"--json",
-					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+					"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 				},
 			).
 			Return(
@@ -177,7 +177,7 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 				[]string{
 					"--focused",
 					"--json",
-					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+					"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 				},
 			).
 			Return(
@@ -221,6 +221,54 @@ func TestAeroSpaceWindowsHappyPaths(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	})
+	t.Run("Window titles are properly populated", func(tt *testing.T) {
+		ctrl := gomock.NewController(tt)
+		defer ctrl.Finish()
+
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+		aeroSpaceWM := AeroSpaceWM{Conn: mockConn}
+
+		windowsResponse := []Window{
+			{WindowID: 12345, WindowTitle: "My Window Title", AppName: "MyApp", AppBundleID: "com.app", Workspace: "1"},
+			{WindowID: 67890, WindowTitle: "", AppName: "AnotherApp", AppBundleID: "com.other", Workspace: "2"},
+		}
+		windowsJSON, err := json.Marshal(windowsResponse)
+		if err != nil {
+			t.Fatalf("failed to marshal windows response: %v", err)
+		}
+		mockConn.EXPECT().
+			SendCommand(
+				"list-windows",
+				[]string{
+					"--all",
+					"--json",
+					"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+				},
+			).
+			Return(
+				&client.Response{
+					StdOut: string(windowsJSON),
+				},
+				nil,
+			)
+
+		windows, err := aeroSpaceWM.GetAllWindows()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		if len(windows) != 2 {
+			t.Errorf("expected 2 windows, got %d", len(windows))
+		}
+
+		if windows[0].WindowTitle != "My Window Title" {
+			t.Errorf("expected window title 'My Window Title', got '%s'", windows[0].WindowTitle)
+		}
+
+		if windows[1].WindowTitle != "" {
+			t.Errorf("expected empty window title, got '%s'", windows[1].WindowTitle)
+		}
+	})
 	// End Happy Paths
 }
 
@@ -238,7 +286,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 				[]string{
 					"--all",
 					"--json",
-					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+					"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 				},
 			).
 			Return(nil, fmt.Errorf("connection error"))
@@ -263,7 +311,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 				[]string{
 					"--workspace", workspaceName,
 					"--json",
-					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+					"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 				},
 			).
 			Return(nil, fmt.Errorf("workspace not found"))
@@ -287,7 +335,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 				[]string{
 					"--focused",
 					"--json",
-					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+					"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 				},
 			).
 			Return(nil, fmt.Errorf("no focused window found"))
@@ -316,7 +364,7 @@ func TestAeroSpaceWindowsErrorPaths(t *testing.T) {
 				[]string{
 					"--focused",
 					"--json",
-					"--format", "%{window-id} %{app-name} %{app-bundle-id} %{workspace}",
+					"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
 				},
 			).
 			Return(
