@@ -19,6 +19,7 @@
 
             # Allow to run `godoc -http=:4444`
             gotools
+            gotestsum
 
             # To create new subcommands, run:
             # cobra-cli add <subcommand-name>
