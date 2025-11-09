@@ -4,11 +4,11 @@ import (
 	"log"
 	"sync"
 
-	client "github.com/cristianoliveira/aerospace-ipc"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
 )
 
 func main() {
-	conn, err := client.NewAeroSpaceClient()
+	conn, err := aerospace.NewClient()
 	if err != nil {
 		log.Fatalf("Error creating connection: %v", err)
 	}
@@ -25,7 +25,7 @@ func main() {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			response, err := conn.Conn.SendCommand("list-windows", []string{"--all", "--json"})
+			response, err := conn.Connection().SendCommand("list-windows", []string{"--all", "--json"})
 			if err != nil {
 				log.Printf("Goroutine %d: Error sending command: %v", id, err)
 				return

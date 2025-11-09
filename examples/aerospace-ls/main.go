@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/cristianoliveira/aerospace-ipc"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
 )
 
 func main() {
-	client, err := aerospace.NewAeroSpaceClient()
+	client, err := aerospace.NewClient()
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
@@ -18,7 +18,7 @@ func main() {
 		}
 	}()
 
-	windows, err := client.GetAllWindows()
+	windows, err := client.Windows().GetAllWindows()
 	if err != nil {
 		log.Fatalf("Failed to get windows: %v", err)
 	}
@@ -29,7 +29,7 @@ func main() {
 
 	fmt.Println("Listed all windows successfully.")
 
-	socketPath, err := client.Conn.GetSocketPath()
+	socketPath, err := client.Connection().GetSocketPath()
 	if err != nil {
 		log.Fatalf("Failed to get socket path: %v", err)
 	}

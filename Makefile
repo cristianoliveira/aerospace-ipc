@@ -8,7 +8,7 @@ help: ## Lists the available commands. Add a comment with '##' to describe a com
 .PHONY: run
 run: ## Run the cli
 	@echo "Running the CLI..."
-	@go run main.go
+	@go run cmd/aerospace-ipc/main.go
 
 .PHONY: test
 test: ## Run the tests
@@ -44,7 +44,7 @@ update-snap-all: ## Update all the snaps
 .PHONY: install
 install: ## Install the CLI
 	@echo "Installing the CLI..."
-	@go install ./main.go
+	@go install ./cmd/aerospace-ipc
 
 .PHONY: nix-build-source
 nix-build-source: ## Build the source code using Nix
