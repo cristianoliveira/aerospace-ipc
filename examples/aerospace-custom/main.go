@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cristianoliveira/aerospace-ipc"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
 )
 
 func main() {
 	socketPath := fmt.Sprintf("/tmp/bobko.%s-%s.sock", "aerospace", os.Getenv("USER"))
-	client, err := aerospace.NewAeroSpaceCustomClient(
-		aerospace.AeroSpaceCustomConnectionOpts{
+	client, err := aerospace.NewCustomClient(
+		aerospace.CustomConnectionOpts{
 			SocketPath:      socketPath,
 		},
 	)
@@ -32,7 +32,7 @@ func main() {
 		}
 	}()
 
-	windows, err := client.GetAllWindows()
+	windows, err := client.Windows().GetAllWindows()
 	if err != nil {
 		log.Fatalf("Failed to get windows: %v", err)
 	}
@@ -58,7 +58,7 @@ func main() {
 				log.Fatalf("No window with index %d", index)
 			}
 
-			err = client.SetFocusByWindowID(windows[index].WindowID)
+			err = client.Windows().SetFocusByWindowID(windows[index].WindowID)
 			if err != nil {
 				log.Fatalf("Failed to focus on window: %v", err)
 			}

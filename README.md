@@ -58,11 +58,11 @@ import (
     "fmt"
     "log"
 
-    aerospacecli "github.com/cristianoliveira/aerospace-ipc"
+    "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
 )
 
 func main() {
-    client, err := aerospacecli.NewAeroSpaceConnection()
+    client, err := aerospace.NewClient()
     if err != nil {
         log.Fatalf("Failed to connect: %v", err)
     }
@@ -71,7 +71,7 @@ func main() {
     // This isn't strictly necessary, but it's a good practice to check the server version
     err = client.Connection().CheckServerVersion()
     if err != nil {
-        if error.Is(err, aerospacecli.ErrVersionMismatch) {
+        if errors.Is(err, aerospace.ErrVersionMismatch) {
             fmt.Printf("[WARN] %s\n", err)
         } else {
             log.Fatalf("Failed to connect: %v", err)
