@@ -5,7 +5,7 @@
 
 A Go library for interacting with [AeroSpace WM](https://github.com/nikitabobko/AeroSpace) via IPC
 
-*Minimum AeroSpace version:* `v0.15.x`
+*Minimum AeroSpace version:* `v0.20.x` (check [docs/MIGRATION](https://github.com/cristianoliveira/aerospace-ipc/blob/main/docs/MIGRATION-2-to-3.md) for older version)
 
 ## Description
 
