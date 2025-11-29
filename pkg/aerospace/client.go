@@ -14,11 +14,6 @@ var ErrVersionMismatch = exceptions.ErrVersion
 
 // Client defines the interface for interacting with AeroSpaceWM.
 type Client interface {
-	// Connection returns the AeroSpaceWM client.
-	//
-	// Returns the AeroSpaceConnection interface for further operations.
-	Connection() client.AeroSpaceConnection
-
 	// CloseConnection closes the AeroSpaceWM connection and releases resources.
 	//
 	// Returns an error if the operation fails.
