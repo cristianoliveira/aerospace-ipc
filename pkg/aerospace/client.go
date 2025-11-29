@@ -14,12 +14,6 @@ var ErrVersionMismatch = exceptions.ErrVersion
 
 // Client defines the interface for interacting with AeroSpaceWM.
 type Client interface {
-	// Windows returns the windows service for interacting with windows.
-	Windows() *windows.Service
-
-	// Workspaces returns the workspace service for interacting with workspaces.
-	Workspaces() *workspaces.Service
-
 	// Connection returns the AeroSpaceWM client.
 	//
 	// Returns the AeroSpaceConnection interface for further operations.
@@ -33,45 +27,20 @@ type Client interface {
 
 // AeroSpaceWM implements the Client interface.
 type AeroSpaceWM struct {
-	conn client.AeroSpaceConnection
+	Conn client.AeroSpaceConnection
 
 	// Services
-	windowsService    *windows.Service
-	workspacesService *workspaces.Service
-}
-
-// Windows returns the windows service for interacting with windows.
-func (a *AeroSpaceWM) Windows() *windows.Service {
-	if a.windowsService == nil {
-		a.windowsService = windows.NewService(a.conn)
-	}
-	return a.windowsService
-}
-
-// Workspaces returns the workspace service for interacting with workspaces.
-func (a *AeroSpaceWM) Workspaces() *workspaces.Service {
-	if a.workspacesService == nil {
-		a.workspacesService = workspaces.NewService(a.conn)
-	}
-	return a.workspacesService
-}
-
-// Connection returns the AeroSpaceConnection
-// which allows low-level interaction with the AeroSpace socket.
-func (a *AeroSpaceWM) Connection() client.AeroSpaceConnection {
-	if a.conn == nil {
-		panic("ASSERTION: AeroSpaceWM client is not initialized")
-	}
-
-	return a.conn
+	Windows    windows.WindowsService
+	Workspaces workspaces.WorkspacesService
 }
 
 func (a *AeroSpaceWM) CloseConnection() error {
-	if a.conn == nil {
-		panic("ASSERTION: AeroSpaceWM client is not initialized")
+	if a.Conn == nil {
+		fmt.Print("Nothing to close")
+		return nil
 	}
 
-	return a.conn.CloseConnection()
+	return a.Conn.CloseConnection()
 }
 
 // NewClient creates a new Client with the default socket path.
@@ -99,7 +68,9 @@ func NewClient() (*AeroSpaceWM, error) {
 	}
 
 	client := &AeroSpaceWM{
-		conn: conn,
+		Conn: conn,
+		Windows: windows.NewService(conn),
+		Workspaces: workspaces.NewService(conn),
 	}
 
 	return client, nil
@@ -145,7 +116,9 @@ func NewCustomClient(opts CustomConnectionOpts) (*AeroSpaceWM, error) {
 	}
 
 	client := &AeroSpaceWM{
-		conn: conn,
+		Conn: conn,
+		Windows: windows.NewService(conn),
+		Workspaces: workspaces.NewService(conn),
 	}
 
 	return client, nil
