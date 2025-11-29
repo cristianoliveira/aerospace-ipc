@@ -140,8 +140,11 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion() error {
 		return fmt.Errorf("failed to parse minor version from %s\n%w", serverVersion, err)
 	}
 
+	// Since AeroSpace may have breaking changes even in minor versions,
+	// I'll enforce exact match on major and minor versions
+	// Last breaking change was on from 0.19.x to 0.20.0
 	if intMajor != c.MinMajorVersion ||
-		intMajor == c.MinMajorVersion && intMinor < c.MinMinorVersion {
+		intMajor == c.MinMajorVersion && intMinor != c.MinMinorVersion {
 		versionJoined := strings.Join(versionParts, ".")
 		return exceptions.NewErrVersionMismatch(
 			c.MinMajorVersion,

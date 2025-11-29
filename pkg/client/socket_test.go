@@ -144,31 +144,17 @@ func TestSocketClient(t *testing.T) {
 func TestCheckServerVersion(t *testing.T) {
 	t.Run("success cases", func(t *testing.T) {
 		successCases := []struct {
-			name             string
-			minMajorVersion  int
-			minMinorVersion  int
-			serverVersion    string
-			expectNoError    bool
+			name            string
+			minMajorVersion int
+			minMinorVersion int
+			serverVersion   string
+			expectNoError   bool
 		}{
 			{
 				name:            "same major and minor version",
 				minMajorVersion: 0,
 				minMinorVersion: 20,
 				serverVersion:   "0.20.0-beta abc123",
-				expectNoError:   true,
-			},
-			{
-				name:            "same major, higher minor version",
-				minMajorVersion: 0,
-				minMinorVersion: 20,
-				serverVersion:   "0.25.0-beta abc123",
-				expectNoError:   true,
-			},
-			{
-				name:            "exact major match with higher minor",
-				minMajorVersion: 0,
-				minMinorVersion: 20,
-				serverVersion:   "0.30.0-beta abc123",
 				expectNoError:   true,
 			},
 			{
@@ -505,6 +491,80 @@ func TestCheckServerVersion(t *testing.T) {
 				setupMock: func(ctrl *gomock.Controller, mockConn *net_mock.MockConn) {
 					mockedResponse := Response{
 						ServerVersion: "0.20.0-beta abc123",
+						StdErr:        "",
+						StdOut:        "",
+						ExitCode:      0,
+					}
+					cmdBytes, _ := json.Marshal(mockedResponse)
+
+					readCount := 0
+					gomock.InOrder(
+						mockConn.EXPECT().
+							Write(gomock.Any()).
+							Return(len(cmdBytes), nil),
+
+						mockConn.EXPECT().
+							Read(gomock.Any()).
+							DoAndReturn(
+								func(p []byte) (int, error) {
+									n := copy(p, cmdBytes)
+									readCount++
+									if readCount == 1 {
+										return n, nil
+									}
+									return n, io.EOF
+								},
+							).
+							Times(1),
+					)
+				},
+				expectedErrorMsg: "version mismatch",
+			},
+			{
+				name:            "version mismatch - same major, higher minor (not allowed)",
+				minMajorVersion: 0,
+				minMinorVersion: 20,
+				serverVersion:   "0.25.0-beta abc123",
+				setupMock: func(ctrl *gomock.Controller, mockConn *net_mock.MockConn) {
+					mockedResponse := Response{
+						ServerVersion: "0.25.0-beta abc123",
+						StdErr:        "",
+						StdOut:        "",
+						ExitCode:      0,
+					}
+					cmdBytes, _ := json.Marshal(mockedResponse)
+
+					readCount := 0
+					gomock.InOrder(
+						mockConn.EXPECT().
+							Write(gomock.Any()).
+							Return(len(cmdBytes), nil),
+
+						mockConn.EXPECT().
+							Read(gomock.Any()).
+							DoAndReturn(
+								func(p []byte) (int, error) {
+									n := copy(p, cmdBytes)
+									readCount++
+									if readCount == 1 {
+										return n, nil
+									}
+									return n, io.EOF
+								},
+							).
+							Times(1),
+					)
+				},
+				expectedErrorMsg: "version mismatch",
+			},
+			{
+				name:            "version mismatch - exact major match with higher minor",
+				minMajorVersion: 0,
+				minMinorVersion: 20,
+				serverVersion:   "0.30.0-beta abc123",
+				setupMock: func(ctrl *gomock.Controller, mockConn *net_mock.MockConn) {
+					mockedResponse := Response{
+						ServerVersion: "0.30.0-beta abc123",
 						StdErr:        "",
 						StdOut:        "",
 						ExitCode:      0,
