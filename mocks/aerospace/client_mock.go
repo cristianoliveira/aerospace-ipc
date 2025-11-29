@@ -13,8 +13,8 @@ type MockClient struct {
 	Conn client.AeroSpaceConnection
 
 	// Services
-	Windows    *windows_mock.MockWindowsService
-	Workspaces *workspaces_mock.MockWorkspacesService
+	windows    *windows_mock.MockWindowsService
+	workspaces *workspaces_mock.MockWorkspacesService
 }
 
 // NewMockClient creates a new mock instance.
@@ -25,11 +25,19 @@ func NewMockClient(ctrl *gomock.Controller) *MockClient {
 
 	mock := &MockClient{
 		Conn: conn,
-		Windows: windows,
-		Workspaces: workspaces,
+		windows: windows,
+		workspaces: workspaces,
 	}
 
 	return mock
+}
+
+func (m *MockClient) Windows() *windows_mock.MockWindowsService {
+	return m.windows
+}
+
+func (m *MockClient) Workspaces() *workspaces_mock.MockWorkspacesService {
+	return m.workspaces
 }
 
 func (m *MockClient) Connection() client.AeroSpaceConnection { 
