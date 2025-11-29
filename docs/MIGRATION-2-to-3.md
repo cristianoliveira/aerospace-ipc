@@ -1,6 +1,13 @@
 # Migration Guide
 
-This guide helps you migrate from the old API to the new service-based API.
+This guide helps you migrate from the old API to the new service-based API. If you are 
+
+Minimum version of the AeroSpace socket client required for compatibility
+
+AeroSpace 0.15.0 till 0.19.x use <=v0.2.1
+AeroSpace 0.20.0 onwards use >=v0.3.0
+
+This guide is for migrating from v2.x to v3.x of the Go client library.
 
 ## Overview
 
