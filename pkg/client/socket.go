@@ -208,9 +208,6 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 		return nil, fmt.Errorf("failed to marshal command\n%w", err)
 	}
 
-	// Debug: pring json
-	fmt.Printf("Sending command: %s\n", string(cmdBytes))
-
 	_, err = c.Conn.Write(cmdBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send command\n%w", err)
