@@ -32,6 +32,10 @@ func NewMockClient(ctrl *gomock.Controller) *MockClient {
 	return mock
 }
 
+func (m *MockClient) Connection() client.AeroSpaceConnection { 
+	return m.Conn
+}
+
 // CloseConnection mocks base method.
 func (m *MockClient) CloseConnection() error {
 	return nil
