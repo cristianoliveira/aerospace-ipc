@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,10 +15,15 @@ import (
 )
 
 // Command represents the JSON structure for AeroSpace socket commands.
+// This wlll mostly mirror https://github.com/nikitabobko/AeroSpace/blob/main/Sources/Common/model/clientServer.swift#L76
 type Command struct {
 	Command string   `json:"command"`
 	Args    []string `json:"args"`
 	Stdin   string   `json:"stdin"`
+	// For Version: 0.20.0 and above
+	// Pass null if not available
+	WindowID  *uint64 `json:"windowId"`
+	Workspace *string `json:"workspace"`
 }
 
 // Response represents the JSON structure from AeroSpace socket response.
@@ -180,10 +186,30 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 		Stdin:   "",
 	}
 
+	// For Version: 0.20.0 and above, we can pass the window ID via env variable
+	// Pass env AEROSPACE_WINDOW_ID if available
+	windowID, ok := os.LookupEnv("AEROSPACE_WINDOW_ID")
+	if ok {
+		parsedID, err := strconv.ParseUint(windowID, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AEROSPACE_WINDOW_ID\n%w", err)
+		}
+		cmd.WindowID = &parsedID
+	}
+
+	// Pass env AEROSPACE_WORKSPACE if available
+	workspace, ok := os.LookupEnv("AEROSPACE_WORKSPACE")
+	if ok {
+		cmd.Workspace = &workspace
+	}
+
 	cmdBytes, err := json.Marshal(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal command\n%w", err)
 	}
+
+	// Debug: pring json
+	fmt.Printf("Sending command: %s\n", string(cmdBytes))
 
 	_, err = c.Conn.Write(cmdBytes)
 	if err != nil {

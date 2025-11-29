@@ -107,8 +107,6 @@ func NewAeroSpaceClient() (*AeroSpaceWM, error) {
 type AeroSpaceCustomConnectionOpts struct {
 	// SocketPath is the custom socket path for the AeroSpace connection.
 	SocketPath string
-	// ValidateVersion is the version to validate against the AeroSpace server.
-	ValidateVersion bool
 }
 
 // NewAeroSpaceCustomClient creates a new AeroSpaceClient with a custom socket path.
@@ -119,7 +117,6 @@ type AeroSpaceCustomConnectionOpts struct {
 //
 //	client, err := aerospace.NewAeroSpaceCustomClient(aerospace.AeroSpaceCustomConnectionOpts{
 //	    SocketPath:      "/path/to/custom/socket",
-//	    ValidateVersion: true, // Set to true to validate the server version
 //	})
 //	if err != nil {
 //	    log.Fatalf("failed to create AeroSpace client: %v", err)
@@ -135,7 +132,6 @@ func NewAeroSpaceCustomClient(opts AeroSpaceCustomConnectionOpts) (*AeroSpaceWM,
 
 	connector := &client.AeroSpaceCustomConnector{
 		SocketPath:      opts.SocketPath,
-		ValidateVersion: opts.ValidateVersion,
 	}
 
 	conn, err := connector.Connect()

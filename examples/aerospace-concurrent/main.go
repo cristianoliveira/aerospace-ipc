@@ -25,7 +25,7 @@ func main() {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			response, err := conn.Client().SendCommand("list-windows", []string{"--all", "--json"})
+			response, err := conn.Conn.SendCommand("list-windows", []string{"--all", "--json"})
 			if err != nil {
 				log.Printf("Goroutine %d: Error sending command: %v", id, err)
 				return
