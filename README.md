@@ -17,19 +17,18 @@ It uses the available Unix Socket to communicate. The socket is typically locate
 As of now, this library only covers the functionality necessary for implementing
 [aerospace-marks](https://github.com/cristianoliveira/aerospace-marks) and [aerospace-scratchpad](https://github.com/cristianoliveira/aerospace-scratchpad) which is:
 
-    - Windows
+    - Windows Service (`client.Windows()`)
         - Get all windows
         - Get focused window
-        - Get window by ID
         - Get windows by workspace
-        - Move window to workspace
+        - Set focus by window ID
         - Set window layout
  
-    - Workspaces
+    - Workspaces Service (`client.Workspaces()`)
         - Get focused workspace
-        - Move workspace to another workspace
+        - Move window to workspace
 
-For the remaining functionality, this library exposes [a SocketClient interface](https://github.com/cristianoliveira/aerospace-ipc/blob/b02bec38820a70895785880b60002a4cf6d5a09b/pkg/client/socket.go#L34), which allows you to send raw commands and receive responses in pure JSON format.
+For the remaining functionality, this library exposes [an AeroSpaceConnection interface](https://github.com/cristianoliveira/aerospace-ipc/blob/main/pkg/client/socket.go#L40), which allows you to send raw commands and receive responses in pure JSON format. Access it via `client.Connection()`.
 
 See [documentation](https://pkg.go.dev/github.com/cristianoliveira/aerospace-ipc) for the full list of available methods.
 
@@ -51,7 +50,7 @@ go get -u github.com/cristianoliveira/aerospace-ipc
 
 ### Example Usage
 
-To use the library, import it into your Go project and create a new AeroSpace connection:
+To use the library, import it into your Go project and create a new AeroSpace client:
 
 ```go
 import (
@@ -79,7 +78,8 @@ func main() {
         }
     }
 
-    windows, err := client.GetAllWindows()
+    // Use the Windows service to interact with windows
+    windows, err := client.Windows().GetAllWindows()
     if err != nil {
         log.Fatalf("Failed to get windows: %v", err)
     }
@@ -87,6 +87,13 @@ func main() {
     for _, window := range windows {
         fmt.Println(window)
     }
+
+    // Use the Workspaces service to interact with workspaces
+    workspace, err := client.Workspaces().GetFocusedWorkspace()
+    if err != nil {
+        log.Fatalf("Failed to get focused workspace: %v", err)
+    }
+    fmt.Printf("Focused workspace: %s\n", workspace.Workspace)
 }
 ```
 
