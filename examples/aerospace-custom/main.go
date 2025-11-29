@@ -16,7 +16,7 @@ func main() {
 	socketPath := fmt.Sprintf("/tmp/bobko.%s-%s.sock", "aerospace", os.Getenv("USER"))
 	client, err := aerospace.NewCustomClient(
 		aerospace.CustomConnectionOpts{
-			SocketPath:      socketPath,
+			SocketPath: socketPath,
 		},
 	)
 	if err != nil {
