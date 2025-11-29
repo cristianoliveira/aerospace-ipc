@@ -17,7 +17,6 @@ func main() {
 	client, err := aerospace.NewAeroSpaceCustomClient(
 		aerospace.AeroSpaceCustomConnectionOpts{
 			SocketPath:      socketPath,
-			ValidateVersion: true,
 		},
 	)
 	if err != nil {

@@ -43,8 +43,6 @@ func (c *AeroSpaceDefaultConnector) Connect() (AeroSpaceConnection, error) {
 type AeroSpaceCustomConnector struct {
 	// SocketPath is the custom socket path for the AeroSpace connection.
 	SocketPath string
-	// ValidateVersion indicates whether to validate the version of the AeroSpace server.
-	ValidateVersion bool
 }
 
 // Connect establishes a connection to the AeroSpace socket and validates the server version
@@ -61,10 +59,8 @@ func (c *AeroSpaceCustomConnector) Connect() (AeroSpaceConnection, error) {
 		return nil, fmt.Errorf("failed to create a socket connection\n%w", err)
 	}
 
-	if c.ValidateVersion {
-		if err := client.CheckServerVersion(); err != nil {
-			return client, err
-		}
+	if err := client.CheckServerVersion(); err != nil {
+		return client, err
 	}
 
 	return client, nil
