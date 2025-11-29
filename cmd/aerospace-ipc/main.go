@@ -13,7 +13,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create AeroSpace client: %v", err)
 	}
-	defer client.CloseConnection()
+	defer func() {
+		if err := client.CloseConnection(); err != nil {
+			log.Printf("failed to close connection: %v", err)
+		}
+	}()
 
 	// Example usage - get all windows
 	windows, err := client.Windows().GetAllWindows()
