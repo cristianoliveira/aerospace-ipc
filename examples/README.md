@@ -19,7 +19,8 @@ Ensure that the AeroSpace window manager is running and accessible via the Unix 
 
 ## Available Examples
 
-- **aerospace-ls**: Demonstrates listing all windows and their details.
-- **aerospace-custom**: Shows how to create a configured client with custom settings and use focus commands.
+- **aerospace-ls**: Demonstrates listing all windows and their details using the Windows service.
+- **aerospace-custom**: Shows how to create a configured client with custom settings and use the Windows service for focus commands.
+- **aerospace-concurrent**: Demonstrates concurrent usage of the client for sending multiple commands.
 
 Feel free to explore and modify the examples to better understand how the AeroSpace IPC library can be integrated into your projects.
