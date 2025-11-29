@@ -30,6 +30,15 @@ type Service struct {
 	client client.AeroSpaceConnection
 }
 
+// WorkspacesService defines the interface for workspace operations in AeroSpaceWM.
+type WorkspacesService interface {
+	// GetFocusedWorkspace returns the currently focused workspace.
+	GetFocusedWorkspace() (*Workspace, error)
+
+	// MoveWindowToWorkspace moves a window to a specified workspace.
+	MoveWindowToWorkspace(windowID int, workspaceName string) error
+}
+
 // NewService creates a new workspace service with the given AeroSpace client connection.
 func NewService(client client.AeroSpaceConnection) *Service {
 	return &Service{client: client}
