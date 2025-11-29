@@ -14,6 +14,12 @@ var ErrVersionMismatch = exceptions.ErrVersion
 
 // Client defines the interface for interacting with AeroSpaceWM.
 type Client interface {
+	// Windows returns the windows service for interacting with windows.
+	Windows() *windows.Service
+
+	// Workspaces returns the workspace service for interacting with workspaces.
+	Workspaces() *workspaces.Service
+
 	// Connection returns the AeroSpaceWM client.
 	//
 	// Returns the AeroSpaceConnection interface for further operations.
