@@ -218,7 +218,9 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByWindowID(123456)
+				err := service.SetFocusByWindowID(SetFocusArgs{
+					WindowID: 123456,
+				})
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
@@ -245,8 +247,165 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByWindowIDWithOpts(123456, SetFocusOpts{
+				err := service.SetFocusByWindowIDWithOpts(SetFocusArgs{
+					WindowID: 123456,
+				}, SetFocusOpts{
 					IgnoreFloating: true,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDirection", func(tt *testing.T) {
+			tt.Run("standard", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"left"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDirection(SetFocusByDirectionArgs{
+					Direction: "left",
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDirectionWithOpts", func(tt *testing.T) {
+			tt.Run("with all options", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				boundaries := "workspace"
+				action := "wrap-around-the-workspace"
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"left", "--ignore-floating", "--boundaries", "workspace", "--boundaries-action", "wrap-around-the-workspace"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDirectionWithOpts(SetFocusByDirectionArgs{
+					Direction: "left",
+				}, SetFocusByDirectionOpts{
+					IgnoreFloating:  true,
+					Boundaries:      &boundaries,
+					BoundariesAction: &action,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDFS", func(tt *testing.T) {
+			tt.Run("standard", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"dfs-next"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDFS(SetFocusByDFSArgs{
+					Direction: "dfs-next",
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDFSWithOpts", func(tt *testing.T) {
+			tt.Run("with options", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				action := "wrap-around-the-workspace"
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"dfs-prev", "--ignore-floating", "--boundaries-action", "wrap-around-the-workspace"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDFSWithOpts(SetFocusByDFSArgs{
+					Direction: "dfs-prev",
+				}, SetFocusByDFSOpts{
+					IgnoreFloating:  true,
+					BoundariesAction: &action,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDFSIndex", func(tt *testing.T) {
+			tt.Run("standard", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"--dfs-index", "0"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDFSIndex(SetFocusByDFSIndexArgs{
+					DFSIndex: 0,
 				})
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
@@ -568,7 +727,9 @@ func TestWindowService(t *testing.T) {
 				SendCommand("focus", []string{"--window-id", "123456"}).
 				Return(nil, fmt.Errorf("failed to focus window"))
 
-			err := service.SetFocusByWindowID(123456)
+			err := service.SetFocusByWindowID(SetFocusArgs{
+				WindowID: 123456,
+			})
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}

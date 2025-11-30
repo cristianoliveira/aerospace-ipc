@@ -71,11 +71,63 @@ type Service struct {
 	client client.AeroSpaceConnection
 }
 
+// SetFocusArgs contains required arguments for SetFocusByWindowID.
+type SetFocusArgs struct {
+	// WindowID specifies the window ID to focus.
+	WindowID int
+}
+
 // SetFocusOpts contains optional parameters for SetFocusByWindowID.
 type SetFocusOpts struct {
 	// IgnoreFloating don't perceive floating windows as part of the tree.
 	// It may be useful for more reliable scripting.
 	IgnoreFloating bool
+}
+
+// SetFocusByDirectionArgs contains required arguments for SetFocusByDirection.
+type SetFocusByDirectionArgs struct {
+	// Direction specifies the direction to focus: left, down, up, or right.
+	Direction string
+}
+
+// SetFocusByDirectionOpts contains optional parameters for SetFocusByDirection.
+type SetFocusByDirectionOpts struct {
+	// IgnoreFloating don't perceive floating windows as part of the tree.
+	IgnoreFloating bool
+
+	// Boundaries defines focus boundaries.
+	// Possible values: "workspace" (default), "all-monitors-outer-frame"
+	Boundaries *string
+
+	// BoundariesAction defines the behavior when requested to cross the boundary.
+	// Possible values: "stop" (default), "fail", "wrap-around-the-workspace", "wrap-around-all-monitors"
+	BoundariesAction *string
+}
+
+// SetFocusByDFSArgs contains required arguments for SetFocusByDFS.
+type SetFocusByDFSArgs struct {
+	// Direction specifies the DFS direction: "dfs-next" or "dfs-prev".
+	Direction string
+}
+
+// SetFocusByDFSOpts contains optional parameters for SetFocusByDFS.
+type SetFocusByDFSOpts struct {
+	// IgnoreFloating don't perceive floating windows as part of the tree.
+	IgnoreFloating bool
+
+	// Boundaries defines focus boundaries. Must be "workspace" (the default) for DFS mode.
+	// Possible values: "workspace" (default)
+	Boundaries *string
+
+	// BoundariesAction defines the behavior when requested to cross the boundary.
+	// Possible values: "stop" (default), "fail", "wrap-around-the-workspace"
+	BoundariesAction *string
+}
+
+// SetFocusByDFSIndexArgs contains required arguments for SetFocusByDFSIndex.
+type SetFocusByDFSIndexArgs struct {
+	// DFSIndex specifies the DFS index (0-based) to focus.
+	DFSIndex int
 }
 
 // SetLayoutArgs contains required arguments for SetLayout.
@@ -104,11 +156,28 @@ type WindowsService interface {
 	GetFocusedWindow() (*Window, error)
 
 	// SetFocusByWindowID sets the focus to a window specified by its ID.
-	SetFocusByWindowID(windowID int) error
+	SetFocusByWindowID(args SetFocusArgs) error
 
 	// SetFocusByWindowIDWithOpts sets the focus to a window specified by its ID with options.
 	// opts must be provided and contains optional parameters.
-	SetFocusByWindowIDWithOpts(windowID int, opts SetFocusOpts) error
+	SetFocusByWindowIDWithOpts(args SetFocusArgs, opts SetFocusOpts) error
+
+	// SetFocusByDirection sets focus to the nearest window in the given direction.
+	SetFocusByDirection(args SetFocusByDirectionArgs) error
+
+	// SetFocusByDirectionWithOpts sets focus to the nearest window in the given direction with options.
+	// opts must be provided and contains optional parameters.
+	SetFocusByDirectionWithOpts(args SetFocusByDirectionArgs, opts SetFocusByDirectionOpts) error
+
+	// SetFocusByDFS sets focus to the window before or after the current window in depth-first order.
+	SetFocusByDFS(args SetFocusByDFSArgs) error
+
+	// SetFocusByDFSWithOpts sets focus to the window before or after the current window in depth-first order with options.
+	// opts must be provided and contains optional parameters.
+	SetFocusByDFSWithOpts(args SetFocusByDFSArgs, opts SetFocusByDFSOpts) error
+
+	// SetFocusByDFSIndex sets focus to a window by its DFS index.
+	SetFocusByDFSIndex(args SetFocusByDFSIndexArgs) error
 
 	// SetLayout sets the layout for the focused window.
 	SetLayout(args SetLayoutArgs) error
@@ -253,9 +322,11 @@ func (s *Service) GetFocusedWindow() (*Window, error) {
 //
 // Usage:
 //
-//	err := windowService.SetFocusByWindowID(12345)
-func (s *Service) SetFocusByWindowID(windowID int) error {
-	return s.SetFocusByWindowIDWithOpts(windowID, SetFocusOpts{})
+//	err := windowService.SetFocusByWindowID(windows.SetFocusArgs{
+//	    WindowID: 12345,
+//	})
+func (s *Service) SetFocusByWindowID(args SetFocusArgs) error {
+	return s.SetFocusByWindowIDWithOpts(args, SetFocusOpts{})
 }
 
 // SetFocusByWindowIDWithOpts sets the focus to a window specified by its ID with options.
@@ -271,25 +342,181 @@ func (s *Service) SetFocusByWindowID(windowID int) error {
 // Usage:
 //
 //	// Focus window ignoring floating windows
-//	err := windowService.SetFocusByWindowIDWithOpts(12345, windows.SetFocusOpts{
+//	err := windowService.SetFocusByWindowIDWithOpts(windows.SetFocusArgs{
+//	    WindowID: 12345,
+//	}, windows.SetFocusOpts{
 //	    IgnoreFloating: true,
 //	})
-func (s *Service) SetFocusByWindowIDWithOpts(windowID int, opts SetFocusOpts) error {
-	args := []string{
-		"--window-id", fmt.Sprintf("%d", windowID),
+func (s *Service) SetFocusByWindowIDWithOpts(args SetFocusArgs, opts SetFocusOpts) error {
+	cmdArgs := []string{
+		"--window-id", fmt.Sprintf("%d", args.WindowID),
 	}
 
 	if opts.IgnoreFloating {
-		args = append(args, "--ignore-floating")
+		cmdArgs = append(cmdArgs, "--ignore-floating")
 	}
 
-	response, err := s.client.SendCommand("focus", args)
+	response, err := s.client.SendCommand("focus", cmdArgs)
 	if err != nil {
 		return err
 	}
 
 	if response.ExitCode != 0 {
-		return fmt.Errorf("failed to focus window with ID %d\n%s", windowID, response.StdErr)
+		return fmt.Errorf("failed to focus window with ID %d\n%s", args.WindowID, response.StdErr)
+	}
+
+	return nil
+}
+
+// SetFocusByDirection sets focus to the nearest window in the given direction.
+//
+// It is equivalent to running the command:
+//
+//	aerospace focus (left|down|up|right)
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	err := windowService.SetFocusByDirection(windows.SetFocusByDirectionArgs{
+//	    Direction: "left",
+//	})
+func (s *Service) SetFocusByDirection(args SetFocusByDirectionArgs) error {
+	return s.SetFocusByDirectionWithOpts(args, SetFocusByDirectionOpts{})
+}
+
+// SetFocusByDirectionWithOpts sets focus to the nearest window in the given direction with options.
+//
+// opts must be provided and contains optional parameters.
+//
+// It is equivalent to running the command:
+//
+//	aerospace focus [--ignore-floating] [--boundaries <boundary>] [--boundaries-action <action>] (left|down|up|right)
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	boundaries := "workspace"
+//	action := "wrap-around-the-workspace"
+//	err := windowService.SetFocusByDirectionWithOpts(windows.SetFocusByDirectionArgs{
+//	    Direction: "left",
+//	}, windows.SetFocusByDirectionOpts{
+//	    IgnoreFloating:  true,
+//	    Boundaries:      &boundaries,
+//	    BoundariesAction: &action,
+//	})
+func (s *Service) SetFocusByDirectionWithOpts(args SetFocusByDirectionArgs, opts SetFocusByDirectionOpts) error {
+	cmdArgs := []string{args.Direction}
+
+	if opts.IgnoreFloating {
+		cmdArgs = append(cmdArgs, "--ignore-floating")
+	}
+	if opts.Boundaries != nil {
+		cmdArgs = append(cmdArgs, "--boundaries", *opts.Boundaries)
+	}
+	if opts.BoundariesAction != nil {
+		cmdArgs = append(cmdArgs, "--boundaries-action", *opts.BoundariesAction)
+	}
+
+	response, err := s.client.SendCommand("focus", cmdArgs)
+	if err != nil {
+		return err
+	}
+
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to focus window in direction %s\n%s", args.Direction, response.StdErr)
+	}
+
+	return nil
+}
+
+// SetFocusByDFS sets focus to the window before or after the current window in depth-first order.
+//
+// It is equivalent to running the command:
+//
+//	aerospace focus (dfs-next|dfs-prev)
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	err := windowService.SetFocusByDFS(windows.SetFocusByDFSArgs{
+//	    Direction: "dfs-next",
+//	})
+func (s *Service) SetFocusByDFS(args SetFocusByDFSArgs) error {
+	return s.SetFocusByDFSWithOpts(args, SetFocusByDFSOpts{})
+}
+
+// SetFocusByDFSWithOpts sets focus to the window before or after the current window in depth-first order with options.
+//
+// opts must be provided and contains optional parameters.
+//
+// It is equivalent to running the command:
+//
+//	aerospace focus [--ignore-floating] [--boundaries <boundary>] [--boundaries-action <action>] (dfs-next|dfs-prev)
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	action := "wrap-around-the-workspace"
+//	err := windowService.SetFocusByDFSWithOpts(windows.SetFocusByDFSArgs{
+//	    Direction: "dfs-next",
+//	}, windows.SetFocusByDFSOpts{
+//	    IgnoreFloating:  true,
+//	    BoundariesAction: &action,
+//	})
+func (s *Service) SetFocusByDFSWithOpts(args SetFocusByDFSArgs, opts SetFocusByDFSOpts) error {
+	cmdArgs := []string{args.Direction}
+
+	if opts.IgnoreFloating {
+		cmdArgs = append(cmdArgs, "--ignore-floating")
+	}
+	if opts.Boundaries != nil {
+		cmdArgs = append(cmdArgs, "--boundaries", *opts.Boundaries)
+	}
+	if opts.BoundariesAction != nil {
+		cmdArgs = append(cmdArgs, "--boundaries-action", *opts.BoundariesAction)
+	}
+
+	response, err := s.client.SendCommand("focus", cmdArgs)
+	if err != nil {
+		return err
+	}
+
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to focus window using DFS direction %s\n%s", args.Direction, response.StdErr)
+	}
+
+	return nil
+}
+
+// SetFocusByDFSIndex sets focus to a window by its DFS index.
+//
+// It is equivalent to running the command:
+//
+//	aerospace focus --dfs-index <dfs-index>
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	err := windowService.SetFocusByDFSIndex(windows.SetFocusByDFSIndexArgs{
+//	    DFSIndex: 0,
+//	})
+func (s *Service) SetFocusByDFSIndex(args SetFocusByDFSIndexArgs) error {
+	cmdArgs := []string{
+		"--dfs-index", fmt.Sprintf("%d", args.DFSIndex),
+	}
+
+	response, err := s.client.SendCommand("focus", cmdArgs)
+	if err != nil {
+		return err
+	}
+
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to focus window with DFS index %d\n%s", args.DFSIndex, response.StdErr)
 	}
 
 	return nil
