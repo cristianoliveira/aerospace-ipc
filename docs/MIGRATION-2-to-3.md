@@ -85,11 +85,78 @@ focusedWindow, err := client.Windows().GetFocusedWindow()
 // Get windows by workspace
 windows, err := client.Windows().GetAllWindowsByWorkspace("my-workspace")
 
-// Set focus
-err := client.Windows().SetFocusByWindowID(windowID)
+// Set focus (standard)
+err := client.Windows().SetFocusByWindowID(windows.SetFocusArgs{
+    WindowID: windowID,
+})
 
-// Set layout
-err := client.Windows().SetLayout(windowID, "floating")
+// Set focus (ignoring floating windows)
+err := client.Windows().SetFocusByWindowIDWithOpts(windows.SetFocusArgs{
+    WindowID: windowID,
+}, windows.SetFocusOpts{
+    IgnoreFloating: true,
+})
+
+// Set focus by direction (left, down, up, right)
+err := client.Windows().SetFocusByDirection(windows.SetFocusByDirectionArgs{
+    Direction: "left",
+})
+
+// Set focus by direction with options
+boundaries := "workspace"
+action := "wrap-around-the-workspace"
+err := client.Windows().SetFocusByDirectionWithOpts(windows.SetFocusByDirectionArgs{
+    Direction: "left",
+}, windows.SetFocusByDirectionOpts{
+    IgnoreFloating:  true,
+    Boundaries:      &boundaries,
+    BoundariesAction: &action,
+})
+
+// Set focus by DFS (dfs-next, dfs-prev)
+err := client.Windows().SetFocusByDFS(windows.SetFocusByDFSArgs{
+    Direction: "dfs-next",
+})
+
+// Set focus by DFS with options
+err := client.Windows().SetFocusByDFSWithOpts(windows.SetFocusByDFSArgs{
+    Direction: "dfs-prev",
+}, windows.SetFocusByDFSOpts{
+    IgnoreFloating: true,
+    BoundariesAction: &action,
+})
+
+// Set focus by DFS index
+err := client.Windows().SetFocusByDFSIndex(windows.SetFocusByDFSIndexArgs{
+    DFSIndex: 0,
+})
+
+// Set layout for focused window (standard)
+err := client.Windows().SetLayout(windows.SetLayoutArgs{
+    Layouts: []string{"floating"},
+})
+
+// Toggle between layouts (order doesn't matter)
+err := client.Windows().SetLayout(windows.SetLayoutArgs{
+    Layouts: []string{"floating", "tiling"},
+})
+err := client.Windows().SetLayout(windows.SetLayoutArgs{
+    Layouts: []string{"horizontal", "vertical"},
+})
+
+// Set layout for specific window
+err := client.Windows().SetLayoutWithOpts(windows.SetLayoutArgs{
+    Layouts: []string{"floating"},
+}, windows.SetLayoutOpts{
+    WindowID: &windowID,
+})
+
+// Toggle layout for specific window
+err := client.Windows().SetLayoutWithOpts(windows.SetLayoutArgs{
+    Layouts: []string{"floating", "tiling"},
+}, windows.SetLayoutOpts{
+    WindowID: &windowID,
+})
 ```
 
 ### 4. Update Workspace Operations
@@ -108,8 +175,33 @@ err := client.MoveWindowToWorkspace(windowID, "workspace-name")
 // Get focused workspace
 workspace, err := client.Workspaces().GetFocusedWorkspace()
 
-// Move window to workspace
-err := client.Workspaces().MoveWindowToWorkspace(windowID, "workspace-name")
+// Move window to workspace (standard - moves focused window)
+err := client.Workspaces().MoveWindowToWorkspace(workspaces.MoveWindowToWorkspaceArgs{
+    WorkspaceName: "workspace-name",
+})
+
+// Move specific window to workspace
+windowID := 12345
+err := client.Workspaces().MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+    WorkspaceName: "workspace-name",
+}, workspaces.MoveWindowToWorkspaceOpts{
+    WindowID: &windowID,
+})
+
+// Move window with focus follows window
+err := client.Workspaces().MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+    WorkspaceName: "workspace-name",
+}, workspaces.MoveWindowToWorkspaceOpts{
+    WindowID:          &windowID,
+    FocusFollowsWindow: true,
+})
+
+// Move to next workspace with wrap around
+err := client.Workspaces().MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+    WorkspaceName: "next",
+}, workspaces.MoveWindowToWorkspaceOpts{
+    WrapAround: true,
+})
 ```
 
 ### 5. Update Type References

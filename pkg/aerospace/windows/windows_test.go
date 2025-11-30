@@ -199,28 +199,363 @@ func TestWindowService(t *testing.T) {
 		})
 
 		t.Run("SetFocusByWindowID", func(tt *testing.T) {
-			ctrl := gomock.NewController(tt)
-			defer ctrl.Finish()
+			tt.Run("standard", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
 
-			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
-			service := NewService(mockConn)
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
 
-			mockConn.EXPECT().
-				SendCommand("focus", []string{"--window-id", "123456"}).
-				Return(
-					&client.Response{
-						ServerVersion: "1.0",
-						StdOut:        "",
-						StdErr:        "",
-						ExitCode:      0,
-					},
-					nil,
-				)
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"--window-id", "123456"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
 
-			err := service.SetFocusByWindowID(123456)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
+				err := service.SetFocusByWindowID(SetFocusArgs{
+					WindowID: 123456,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByWindowIDWithOpts", func(tt *testing.T) {
+			tt.Run("with ignore floating", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"--window-id", "123456", "--ignore-floating"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByWindowIDWithOpts(SetFocusArgs{
+					WindowID: 123456,
+				}, SetFocusOpts{
+					IgnoreFloating: true,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDirection", func(tt *testing.T) {
+			tt.Run("standard", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"left"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDirection(SetFocusByDirectionArgs{
+					Direction: "left",
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDirectionWithOpts", func(tt *testing.T) {
+			tt.Run("with all options", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				boundaries := "workspace"
+				action := "wrap-around-the-workspace"
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"left", "--ignore-floating", "--boundaries", "workspace", "--boundaries-action", "wrap-around-the-workspace"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDirectionWithOpts(SetFocusByDirectionArgs{
+					Direction: "left",
+				}, SetFocusByDirectionOpts{
+					IgnoreFloating:  true,
+					Boundaries:      &boundaries,
+					BoundariesAction: &action,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDFS", func(tt *testing.T) {
+			tt.Run("standard", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"dfs-next"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDFS(SetFocusByDFSArgs{
+					Direction: "dfs-next",
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDFSWithOpts", func(tt *testing.T) {
+			tt.Run("with options", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				action := "wrap-around-the-workspace"
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"dfs-prev", "--ignore-floating", "--boundaries-action", "wrap-around-the-workspace"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDFSWithOpts(SetFocusByDFSArgs{
+					Direction: "dfs-prev",
+				}, SetFocusByDFSOpts{
+					IgnoreFloating:  true,
+					BoundariesAction: &action,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetFocusByDFSIndex", func(tt *testing.T) {
+			tt.Run("standard", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"--dfs-index", "0"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetFocusByDFSIndex(SetFocusByDFSIndexArgs{
+					DFSIndex: 0,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetLayout", func(tt *testing.T) {
+			tt.Run("standard single layout (focused window)", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("layout", []string{"floating"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetLayout(SetLayoutArgs{
+					Layouts: []string{"floating"},
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("toggle between layouts", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("layout", []string{"floating", "tiling"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetLayout(SetLayoutArgs{
+					Layouts: []string{"floating", "tiling"},
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("toggle orientation", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("layout", []string{"horizontal", "vertical"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetLayout(SetLayoutArgs{
+					Layouts: []string{"horizontal", "vertical"},
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("SetLayoutWithOpts", func(tt *testing.T) {
+			tt.Run("for specific window", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				windowID := 123456
+				mockConn.EXPECT().
+					SendCommand("layout", []string{"floating", "--window-id", "123456"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetLayoutWithOpts(SetLayoutArgs{
+					Layouts: []string{"floating"},
+				}, SetLayoutOpts{
+					WindowID: &windowID,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("toggle layout for specific window", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				windowID := 123456
+				mockConn.EXPECT().
+					SendCommand("layout", []string{"floating", "tiling", "--window-id", "123456"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetLayoutWithOpts(SetLayoutArgs{
+					Layouts: []string{"floating", "tiling"},
+				}, SetLayoutOpts{
+					WindowID: &windowID,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
 		})
 
 		t.Run("Window titles are properly populated", func(tt *testing.T) {
@@ -392,7 +727,9 @@ func TestWindowService(t *testing.T) {
 				SendCommand("focus", []string{"--window-id", "123456"}).
 				Return(nil, fmt.Errorf("failed to focus window"))
 
-			err := service.SetFocusByWindowID(123456)
+			err := service.SetFocusByWindowID(SetFocusArgs{
+				WindowID: 123456,
+			})
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}
