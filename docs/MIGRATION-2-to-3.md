@@ -86,11 +86,49 @@ focusedWindow, err := client.Windows().GetFocusedWindow()
 windows, err := client.Windows().GetAllWindowsByWorkspace("my-workspace")
 
 // Set focus (standard)
-err := client.Windows().SetFocusByWindowID(windowID)
+err := client.Windows().SetFocusByWindowID(windows.SetFocusArgs{
+    WindowID: windowID,
+})
 
 // Set focus (ignoring floating windows)
-err := client.Windows().SetFocusByWindowIDWithOpts(windowID, windows.SetFocusOpts{
+err := client.Windows().SetFocusByWindowIDWithOpts(windows.SetFocusArgs{
+    WindowID: windowID,
+}, windows.SetFocusOpts{
     IgnoreFloating: true,
+})
+
+// Set focus by direction (left, down, up, right)
+err := client.Windows().SetFocusByDirection(windows.SetFocusByDirectionArgs{
+    Direction: "left",
+})
+
+// Set focus by direction with options
+boundaries := "workspace"
+action := "wrap-around-the-workspace"
+err := client.Windows().SetFocusByDirectionWithOpts(windows.SetFocusByDirectionArgs{
+    Direction: "left",
+}, windows.SetFocusByDirectionOpts{
+    IgnoreFloating:  true,
+    Boundaries:      &boundaries,
+    BoundariesAction: &action,
+})
+
+// Set focus by DFS (dfs-next, dfs-prev)
+err := client.Windows().SetFocusByDFS(windows.SetFocusByDFSArgs{
+    Direction: "dfs-next",
+})
+
+// Set focus by DFS with options
+err := client.Windows().SetFocusByDFSWithOpts(windows.SetFocusByDFSArgs{
+    Direction: "dfs-prev",
+}, windows.SetFocusByDFSOpts{
+    IgnoreFloating: true,
+    BoundariesAction: &action,
+})
+
+// Set focus by DFS index
+err := client.Windows().SetFocusByDFSIndex(windows.SetFocusByDFSIndexArgs{
+    DFSIndex: 0,
 })
 
 // Set layout for focused window (standard)
