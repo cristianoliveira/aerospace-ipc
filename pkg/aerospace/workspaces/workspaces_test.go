@@ -54,6 +54,35 @@ func TestWorkspaceService(t *testing.T) {
 		})
 
 		t.Run("MoveWindowToWorkspace", func(tt *testing.T) {
+			tt.Run("standard (focused window)", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				workspace := "42"
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-node-to-workspace",
+						[]string{workspace},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWindowToWorkspace(workspace)
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
+
+		t.Run("MoveWindowToWorkspaceWithOpts", func(tt *testing.T) {
 			tt.Run("with window ID", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
@@ -79,36 +108,9 @@ func TestWorkspaceService(t *testing.T) {
 						nil,
 					)
 
-				err := service.MoveWindowToWorkspace(workspace, &MoveWindowToWorkspaceOpts{
+				err := service.MoveWindowToWorkspaceWithOpts(workspace, MoveWindowToWorkspaceOpts{
 					WindowID: &windowID,
 				})
-				if err != nil {
-					ttt.Fatalf("unexpected error: %v", err)
-				}
-			})
-
-			tt.Run("without window ID (focused window)", func(ttt *testing.T) {
-				ctrl := gomock.NewController(ttt)
-				defer ctrl.Finish()
-
-				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
-				service := NewService(mockConn)
-
-				workspace := "42"
-
-				mockConn.EXPECT().
-					SendCommand(
-						"move-node-to-workspace",
-						[]string{workspace},
-					).
-					Return(
-						&client.Response{
-							StdOut: "",
-						},
-						nil,
-					)
-
-				err := service.MoveWindowToWorkspace(workspace, nil)
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
@@ -142,7 +144,7 @@ func TestWorkspaceService(t *testing.T) {
 						nil,
 					)
 
-				err := service.MoveWindowToWorkspace(workspace, &MoveWindowToWorkspaceOpts{
+				err := service.MoveWindowToWorkspaceWithOpts(workspace, MoveWindowToWorkspaceOpts{
 					WindowID:           &windowID,
 					FocusFollowsWindow: true,
 					FailIfNoop:         true,
