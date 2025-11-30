@@ -108,8 +108,20 @@ err := client.MoveWindowToWorkspace(windowID, "workspace-name")
 // Get focused workspace
 workspace, err := client.Workspaces().GetFocusedWorkspace()
 
-// Move window to workspace
-err := client.Workspaces().MoveWindowToWorkspace(windowID, "workspace-name")
+// Move window to workspace (move focused window)
+err := client.Workspaces().MoveWindowToWorkspace("workspace-name", nil)
+
+// Move specific window to workspace
+windowID := 12345
+err := client.Workspaces().MoveWindowToWorkspace("workspace-name", &workspaces.MoveWindowToWorkspaceOpts{
+    WindowID: &windowID,
+})
+
+// Move window with focus follows window
+err := client.Workspaces().MoveWindowToWorkspace("workspace-name", &workspaces.MoveWindowToWorkspaceOpts{
+    WindowID:          &windowID,
+    FocusFollowsWindow: true,
+})
 ```
 
 ### 5. Update Type References
