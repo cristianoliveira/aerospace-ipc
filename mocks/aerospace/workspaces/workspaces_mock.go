@@ -56,15 +56,29 @@ func (mr *MockWorkspacesServiceMockRecorder) GetFocusedWorkspace() *gomock.Call 
 }
 
 // MoveWindowToWorkspace mocks base method.
-func (m *MockWorkspacesService) MoveWindowToWorkspace(workspaceName string, opts *workspaces.MoveWindowToWorkspaceOpts) error {
+func (m *MockWorkspacesService) MoveWindowToWorkspace(workspaceName string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MoveWindowToWorkspace", workspaceName, opts)
+	ret := m.ctrl.Call(m, "MoveWindowToWorkspace", workspaceName)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MoveWindowToWorkspace indicates an expected call of MoveWindowToWorkspace.
-func (mr *MockWorkspacesServiceMockRecorder) MoveWindowToWorkspace(workspaceName, opts any) *gomock.Call {
+func (mr *MockWorkspacesServiceMockRecorder) MoveWindowToWorkspace(workspaceName any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveWindowToWorkspace", reflect.TypeOf((*MockWorkspacesService)(nil).MoveWindowToWorkspace), workspaceName, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveWindowToWorkspace", reflect.TypeOf((*MockWorkspacesService)(nil).MoveWindowToWorkspace), workspaceName)
+}
+
+// MoveWindowToWorkspaceWithOpts mocks base method.
+func (m *MockWorkspacesService) MoveWindowToWorkspaceWithOpts(workspaceName string, opts workspaces.MoveWindowToWorkspaceOpts) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MoveWindowToWorkspaceWithOpts", workspaceName, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MoveWindowToWorkspaceWithOpts indicates an expected call of MoveWindowToWorkspaceWithOpts.
+func (mr *MockWorkspacesServiceMockRecorder) MoveWindowToWorkspaceWithOpts(workspaceName, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveWindowToWorkspaceWithOpts", reflect.TypeOf((*MockWorkspacesService)(nil).MoveWindowToWorkspaceWithOpts), workspaceName, opts)
 }

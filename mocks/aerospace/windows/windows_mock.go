@@ -86,29 +86,57 @@ func (mr *MockWindowsServiceMockRecorder) GetFocusedWindow() *gomock.Call {
 }
 
 // SetFocusByWindowID mocks base method.
-func (m *MockWindowsService) SetFocusByWindowID(windowID int, opts *windows.SetFocusOpts) error {
+func (m *MockWindowsService) SetFocusByWindowID(windowID int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetFocusByWindowID", windowID, opts)
+	ret := m.ctrl.Call(m, "SetFocusByWindowID", windowID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetFocusByWindowID indicates an expected call of SetFocusByWindowID.
-func (mr *MockWindowsServiceMockRecorder) SetFocusByWindowID(windowID, opts any) *gomock.Call {
+func (mr *MockWindowsServiceMockRecorder) SetFocusByWindowID(windowID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFocusByWindowID", reflect.TypeOf((*MockWindowsService)(nil).SetFocusByWindowID), windowID, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFocusByWindowID", reflect.TypeOf((*MockWindowsService)(nil).SetFocusByWindowID), windowID)
+}
+
+// SetFocusByWindowIDWithOpts mocks base method.
+func (m *MockWindowsService) SetFocusByWindowIDWithOpts(windowID int, opts windows.SetFocusOpts) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetFocusByWindowIDWithOpts", windowID, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetFocusByWindowIDWithOpts indicates an expected call of SetFocusByWindowIDWithOpts.
+func (mr *MockWindowsServiceMockRecorder) SetFocusByWindowIDWithOpts(windowID, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFocusByWindowIDWithOpts", reflect.TypeOf((*MockWindowsService)(nil).SetFocusByWindowIDWithOpts), windowID, opts)
 }
 
 // SetLayout mocks base method.
-func (m *MockWindowsService) SetLayout(layout string, opts *windows.SetLayoutOpts) error {
+func (m *MockWindowsService) SetLayout(layout string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetLayout", layout, opts)
+	ret := m.ctrl.Call(m, "SetLayout", layout)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetLayout indicates an expected call of SetLayout.
-func (mr *MockWindowsServiceMockRecorder) SetLayout(layout, opts any) *gomock.Call {
+func (mr *MockWindowsServiceMockRecorder) SetLayout(layout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLayout", reflect.TypeOf((*MockWindowsService)(nil).SetLayout), layout, opts)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLayout", reflect.TypeOf((*MockWindowsService)(nil).SetLayout), layout)
+}
+
+// SetLayoutWithOpts mocks base method.
+func (m *MockWindowsService) SetLayoutWithOpts(layout string, opts windows.SetLayoutOpts) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetLayoutWithOpts", layout, opts)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetLayoutWithOpts indicates an expected call of SetLayoutWithOpts.
+func (mr *MockWindowsServiceMockRecorder) SetLayoutWithOpts(layout, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLayoutWithOpts", reflect.TypeOf((*MockWindowsService)(nil).SetLayoutWithOpts), layout, opts)
 }

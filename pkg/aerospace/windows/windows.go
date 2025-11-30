@@ -96,13 +96,20 @@ type WindowsService interface {
 	GetFocusedWindow() (*Window, error)
 
 	// SetFocusByWindowID sets the focus to a window specified by its ID.
-	// opts can be nil to use default options.
-	SetFocusByWindowID(windowID int, opts *SetFocusOpts) error
+	SetFocusByWindowID(windowID int) error
 
-	// SetLayout sets the layout for a window.
-	// layout is required and can be one of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
-	// opts can be nil to use default options (set layout for focused window).
-	SetLayout(layout string, opts *SetLayoutOpts) error
+	// SetFocusByWindowIDWithOpts sets the focus to a window specified by its ID with options.
+	// opts must be provided and contains optional parameters.
+	SetFocusByWindowIDWithOpts(windowID int, opts SetFocusOpts) error
+
+	// SetLayout sets the layout for the focused window.
+	// layout can be one of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+	SetLayout(layout string) error
+
+	// SetLayoutWithOpts sets the layout for a window with options.
+	// layout can be one of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+	// opts must be provided and contains optional parameters.
+	SetLayoutWithOpts(layout string, opts SetLayoutOpts) error
 }
 
 // NewService creates a new window service with the given AeroSpace client connection.
@@ -232,7 +239,22 @@ func (s *Service) GetFocusedWindow() (*Window, error) {
 
 // SetFocusByWindowID sets the focus to a window specified by its ID.
 //
-// opts can be nil to use default options.
+// It is equivalent to running the command:
+//
+//	aerospace focus --window-id <window-id>
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	err := windowService.SetFocusByWindowID(12345)
+func (s *Service) SetFocusByWindowID(windowID int) error {
+	return s.SetFocusByWindowIDWithOpts(windowID, SetFocusOpts{})
+}
+
+// SetFocusByWindowIDWithOpts sets the focus to a window specified by its ID with options.
+//
+// opts must be provided and contains optional parameters.
 //
 // It is equivalent to running the command:
 //
@@ -242,19 +264,16 @@ func (s *Service) GetFocusedWindow() (*Window, error) {
 //
 // Usage:
 //
-//	// Focus window with default options
-//	err := windowService.SetFocusByWindowID(12345, nil)
-//
 //	// Focus window ignoring floating windows
-//	err := windowService.SetFocusByWindowID(12345, &windows.SetFocusOpts{
+//	err := windowService.SetFocusByWindowIDWithOpts(12345, windows.SetFocusOpts{
 //	    IgnoreFloating: true,
 //	})
-func (s *Service) SetFocusByWindowID(windowID int, opts *SetFocusOpts) error {
+func (s *Service) SetFocusByWindowIDWithOpts(windowID int, opts SetFocusOpts) error {
 	args := []string{
 		"--window-id", fmt.Sprintf("%d", windowID),
 	}
 
-	if opts != nil && opts.IgnoreFloating {
+	if opts.IgnoreFloating {
 		args = append(args, "--ignore-floating")
 	}
 
@@ -270,35 +289,45 @@ func (s *Service) SetFocusByWindowID(windowID int, opts *SetFocusOpts) error {
 	return nil
 }
 
-// SetLayout sets the layout for a window.
+// SetLayout sets the layout for the focused window.
 //
-// layout is required and can be one of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
-// opts can be nil to use default options (set layout for focused window).
+// layout can be one of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
 //
 // It is equivalent to running the command:
 //
-//	aerospace layout <layout> [--window-id <window-id>]
-//
-// Available layouts:
-//
-//	accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+//	aerospace layout <layout>
 //
 // Returns an error if the operation fails.
 //
 // Usage:
 //
-//	// Set layout for focused window
-//	err := windowService.SetLayout("floating", nil)
+//	err := windowService.SetLayout("floating")
+func (s *Service) SetLayout(layout string) error {
+	return s.SetLayoutWithOpts(layout, SetLayoutOpts{})
+}
+
+// SetLayoutWithOpts sets the layout for a window with options.
+//
+// layout can be one of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+// opts must be provided and contains optional parameters.
+//
+// It is equivalent to running the command:
+//
+//	aerospace layout <layout> [--window-id <window-id>]
+//
+// Returns an error if the operation fails.
+//
+// Usage:
 //
 //	// Set layout for specific window
 //	windowID := 12345
-//	err := windowService.SetLayout("floating", &windows.SetLayoutOpts{
+//	err := windowService.SetLayoutWithOpts("floating", windows.SetLayoutOpts{
 //	    WindowID: &windowID,
 //	})
-func (s *Service) SetLayout(layout string, opts *SetLayoutOpts) error {
+func (s *Service) SetLayoutWithOpts(layout string, opts SetLayoutOpts) error {
 	args := []string{layout}
 
-	if opts != nil && opts.WindowID != nil {
+	if opts.WindowID != nil {
 		args = append(args, "--window-id", fmt.Sprintf("%d", *opts.WindowID))
 	}
 

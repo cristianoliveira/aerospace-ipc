@@ -199,7 +199,7 @@ func TestWindowService(t *testing.T) {
 		})
 
 		t.Run("SetFocusByWindowID", func(tt *testing.T) {
-			tt.Run("with default options", func(ttt *testing.T) {
+			tt.Run("standard", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -218,12 +218,14 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByWindowID(123456, nil)
+				err := service.SetFocusByWindowID(123456)
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
+		})
 
+		t.Run("SetFocusByWindowIDWithOpts", func(tt *testing.T) {
 			tt.Run("with ignore floating", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
@@ -243,7 +245,7 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByWindowID(123456, &SetFocusOpts{
+				err := service.SetFocusByWindowIDWithOpts(123456, SetFocusOpts{
 					IgnoreFloating: true,
 				})
 				if err != nil {
@@ -253,7 +255,7 @@ func TestWindowService(t *testing.T) {
 		})
 
 		t.Run("SetLayout", func(tt *testing.T) {
-			tt.Run("for focused window", func(ttt *testing.T) {
+			tt.Run("standard (focused window)", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -272,12 +274,14 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetLayout("floating", nil)
+				err := service.SetLayout("floating")
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
+		})
 
+		t.Run("SetLayoutWithOpts", func(tt *testing.T) {
 			tt.Run("for specific window", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
@@ -298,7 +302,7 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetLayout("floating", &SetLayoutOpts{
+				err := service.SetLayoutWithOpts("floating", SetLayoutOpts{
 					WindowID: &windowID,
 				})
 				if err != nil {
@@ -476,7 +480,7 @@ func TestWindowService(t *testing.T) {
 				SendCommand("focus", []string{"--window-id", "123456"}).
 				Return(nil, fmt.Errorf("failed to focus window"))
 
-			err := service.SetFocusByWindowID(123456, nil)
+			err := service.SetFocusByWindowID(123456)
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}

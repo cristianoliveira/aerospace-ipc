@@ -85,19 +85,19 @@ focusedWindow, err := client.Windows().GetFocusedWindow()
 // Get windows by workspace
 windows, err := client.Windows().GetAllWindowsByWorkspace("my-workspace")
 
-// Set focus (with default options)
-err := client.Windows().SetFocusByWindowID(windowID, nil)
+// Set focus (standard)
+err := client.Windows().SetFocusByWindowID(windowID)
 
 // Set focus (ignoring floating windows)
-err := client.Windows().SetFocusByWindowID(windowID, &windows.SetFocusOpts{
+err := client.Windows().SetFocusByWindowIDWithOpts(windowID, windows.SetFocusOpts{
     IgnoreFloating: true,
 })
 
-// Set layout for focused window
-err := client.Windows().SetLayout("floating", nil)
+// Set layout for focused window (standard)
+err := client.Windows().SetLayout("floating")
 
 // Set layout for specific window
-err := client.Windows().SetLayout("floating", &windows.SetLayoutOpts{
+err := client.Windows().SetLayoutWithOpts("floating", windows.SetLayoutOpts{
     WindowID: &windowID,
 })
 ```
@@ -118,17 +118,17 @@ err := client.MoveWindowToWorkspace(windowID, "workspace-name")
 // Get focused workspace
 workspace, err := client.Workspaces().GetFocusedWorkspace()
 
-// Move window to workspace (move focused window)
-err := client.Workspaces().MoveWindowToWorkspace("workspace-name", nil)
+// Move window to workspace (standard - moves focused window)
+err := client.Workspaces().MoveWindowToWorkspace("workspace-name")
 
 // Move specific window to workspace
 windowID := 12345
-err := client.Workspaces().MoveWindowToWorkspace("workspace-name", &workspaces.MoveWindowToWorkspaceOpts{
+err := client.Workspaces().MoveWindowToWorkspaceWithOpts("workspace-name", workspaces.MoveWindowToWorkspaceOpts{
     WindowID: &windowID,
 })
 
 // Move window with focus follows window
-err := client.Workspaces().MoveWindowToWorkspace("workspace-name", &workspaces.MoveWindowToWorkspaceOpts{
+err := client.Workspaces().MoveWindowToWorkspaceWithOpts("workspace-name", workspaces.MoveWindowToWorkspaceOpts{
     WindowID:          &windowID,
     FocusFollowsWindow: true,
 })
