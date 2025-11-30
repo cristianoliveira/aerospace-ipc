@@ -176,18 +176,31 @@ err := client.MoveWindowToWorkspace(windowID, "workspace-name")
 workspace, err := client.Workspaces().GetFocusedWorkspace()
 
 // Move window to workspace (standard - moves focused window)
-err := client.Workspaces().MoveWindowToWorkspace("workspace-name")
+err := client.Workspaces().MoveWindowToWorkspace(workspaces.MoveWindowToWorkspaceArgs{
+    WorkspaceName: "workspace-name",
+})
 
 // Move specific window to workspace
 windowID := 12345
-err := client.Workspaces().MoveWindowToWorkspaceWithOpts("workspace-name", workspaces.MoveWindowToWorkspaceOpts{
+err := client.Workspaces().MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+    WorkspaceName: "workspace-name",
+}, workspaces.MoveWindowToWorkspaceOpts{
     WindowID: &windowID,
 })
 
 // Move window with focus follows window
-err := client.Workspaces().MoveWindowToWorkspaceWithOpts("workspace-name", workspaces.MoveWindowToWorkspaceOpts{
+err := client.Workspaces().MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+    WorkspaceName: "workspace-name",
+}, workspaces.MoveWindowToWorkspaceOpts{
     WindowID:          &windowID,
     FocusFollowsWindow: true,
+})
+
+// Move to next workspace with wrap around
+err := client.Workspaces().MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+    WorkspaceName: "next",
+}, workspaces.MoveWindowToWorkspaceOpts{
+    WrapAround: true,
 })
 ```
 

@@ -30,6 +30,14 @@ type Service struct {
 	client client.AeroSpaceConnection
 }
 
+// MoveWindowToWorkspaceArgs contains required arguments for MoveWindowToWorkspace.
+type MoveWindowToWorkspaceArgs struct {
+	// WorkspaceName specifies the workspace name where to move the window.
+	// Can be a workspace name (e.g., "42", "terminal") or "next"/"prev"
+	// to move to the next or previous workspace.
+	WorkspaceName string
+}
+
 // MoveWindowToWorkspaceOpts contains optional parameters for MoveWindowToWorkspace.
 type MoveWindowToWorkspaceOpts struct {
 	// WindowID specifies the window ID to move. If not set, the focused window is moved.
@@ -47,6 +55,14 @@ type MoveWindowToWorkspaceOpts struct {
 	// WrapAround makes it possible to jump between first and last workspaces
 	// when using "next" or "prev" as workspace name.
 	WrapAround bool
+
+	// Stdin reads the list of workspaces from stdin.
+	// Incompatible with NoStdin.
+	Stdin bool
+
+	// NoStdin ignores the list of workspaces from stdin, even if provided.
+	// Incompatible with Stdin.
+	NoStdin bool
 }
 
 // WorkspacesService defines the interface for workspace operations in AeroSpaceWM.
@@ -55,15 +71,11 @@ type WorkspacesService interface {
 	GetFocusedWorkspace() (*Workspace, error)
 
 	// MoveWindowToWorkspace moves the focused window to a specified workspace.
-	// workspaceName can be a workspace name (e.g., "42", "terminal") or "next"/"prev"
-	// to move to the next or previous workspace.
-	MoveWindowToWorkspace(workspaceName string) error
+	MoveWindowToWorkspace(args MoveWindowToWorkspaceArgs) error
 
 	// MoveWindowToWorkspaceWithOpts moves a window to a specified workspace with options.
-	// workspaceName can be a workspace name (e.g., "42", "terminal") or "next"/"prev"
-	// to move to the next or previous workspace.
 	// opts must be provided and contains optional parameters.
-	MoveWindowToWorkspaceWithOpts(workspaceName string, opts MoveWindowToWorkspaceOpts) error
+	MoveWindowToWorkspaceWithOpts(args MoveWindowToWorkspaceArgs, opts MoveWindowToWorkspaceOpts) error
 }
 
 // NewService creates a new workspace service with the given AeroSpace client connection.
@@ -111,7 +123,7 @@ func (s *Service) GetFocusedWorkspace() (*Workspace, error) {
 
 // MoveWindowToWorkspace moves the focused window to a specified workspace.
 //
-// workspaceName can be a workspace name (e.g., "42", "terminal") or "next"/"prev"
+// args.WorkspaceName can be a workspace name (e.g., "42", "terminal") or "next"/"prev"
 // to move to the next or previous workspace.
 //
 // It is equivalent to running the command:
@@ -122,57 +134,71 @@ func (s *Service) GetFocusedWorkspace() (*Workspace, error) {
 //
 // Usage:
 //
-//	err := workspaceService.MoveWindowToWorkspace("my-workspace")
-func (s *Service) MoveWindowToWorkspace(workspaceName string) error {
-	return s.MoveWindowToWorkspaceWithOpts(workspaceName, MoveWindowToWorkspaceOpts{})
+//	err := workspaceService.MoveWindowToWorkspace(workspaces.MoveWindowToWorkspaceArgs{
+//	    WorkspaceName: "my-workspace",
+//	})
+func (s *Service) MoveWindowToWorkspace(args MoveWindowToWorkspaceArgs) error {
+	return s.MoveWindowToWorkspaceWithOpts(args, MoveWindowToWorkspaceOpts{})
 }
 
 // MoveWindowToWorkspaceWithOpts moves a window to a specified workspace with options.
 //
-// workspaceName can be a workspace name (e.g., "42", "terminal") or "next"/"prev"
+// args.WorkspaceName can be a workspace name (e.g., "42", "terminal") or "next"/"prev"
 // to move to the next or previous workspace.
 // opts must be provided and contains optional parameters.
 //
 // It is equivalent to running the command:
 //
-//	aerospace move-node-to-workspace [--window-id <window-id>] [--focus-follows-window] [--fail-if-noop] [--wrap-around] <workspace-name>
+//	aerospace move-node-to-workspace [--window-id <window-id>] [--focus-follows-window] [--fail-if-noop] [--wrap-around] [--stdin|--no-stdin] <workspace-name>
 //
 // Returns an error if the operation fails.
 //
 // Usage:
 //
 //	// Move specific window to workspace
-//	err := workspaceService.MoveWindowToWorkspaceWithOpts("my-workspace", workspaces.MoveWindowToWorkspaceOpts{
+//	err := workspaceService.MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+//	    WorkspaceName: "my-workspace",
+//	}, workspaces.MoveWindowToWorkspaceOpts{
 //	    WindowID: &windowID,
 //	})
 //
 //	// Move window with focus follows window
-//	err := workspaceService.MoveWindowToWorkspaceWithOpts("my-workspace", workspaces.MoveWindowToWorkspaceOpts{
+//	err := workspaceService.MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+//	    WorkspaceName: "my-workspace",
+//	}, workspaces.MoveWindowToWorkspaceOpts{
 //	    WindowID:          &windowID,
 //	    FocusFollowsWindow: true,
 //	})
 //
 //	// Move to next workspace with wrap around
-//	err := workspaceService.MoveWindowToWorkspaceWithOpts("next", workspaces.MoveWindowToWorkspaceOpts{
+//	err := workspaceService.MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowToWorkspaceArgs{
+//	    WorkspaceName: "next",
+//	}, workspaces.MoveWindowToWorkspaceOpts{
 //	    WrapAround: true,
 //	})
-func (s *Service) MoveWindowToWorkspaceWithOpts(workspaceName string, opts MoveWindowToWorkspaceOpts) error {
-	args := []string{workspaceName}
+func (s *Service) MoveWindowToWorkspaceWithOpts(args MoveWindowToWorkspaceArgs, opts MoveWindowToWorkspaceOpts) error {
+	cmdArgs := []string{args.WorkspaceName}
 
 	if opts.WindowID != nil {
-		args = append(args, "--window-id", fmt.Sprintf("%d", *opts.WindowID))
+		cmdArgs = append(cmdArgs, "--window-id", fmt.Sprintf("%d", *opts.WindowID))
 	}
 	if opts.FocusFollowsWindow {
-		args = append(args, "--focus-follows-window")
+		cmdArgs = append(cmdArgs, "--focus-follows-window")
 	}
 	if opts.FailIfNoop {
-		args = append(args, "--fail-if-noop")
+		cmdArgs = append(cmdArgs, "--fail-if-noop")
 	}
 	if opts.WrapAround {
-		args = append(args, "--wrap-around")
+		cmdArgs = append(cmdArgs, "--wrap-around")
+	}
+	if opts.Stdin {
+		cmdArgs = append(cmdArgs, "--stdin")
+	}
+	if opts.NoStdin {
+		cmdArgs = append(cmdArgs, "--no-stdin")
 	}
 
-	response, err := s.client.SendCommand("move-node-to-workspace", args)
+	response, err := s.client.SendCommand("move-node-to-workspace", cmdArgs)
 	if err != nil {
 		return err
 	}
