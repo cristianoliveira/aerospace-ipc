@@ -3,7 +3,6 @@ package workspaces
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"testing"
 
 	mock_client "github.com/cristianoliveira/aerospace-ipc/internal/mocks"
@@ -55,39 +54,106 @@ func TestWorkspaceService(t *testing.T) {
 		})
 
 		t.Run("MoveWindowToWorkspace", func(tt *testing.T) {
-			ctrl := gomock.NewController(tt)
-			defer ctrl.Finish()
+			tt.Run("standard (focused window)", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
 
-			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
-			service := NewService(mockConn)
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
 
-			windowID := "12345"
-			workspace := "42"
+				workspace := "42"
 
-			mockConn.EXPECT().
-				SendCommand(
-					"move-node-to-workspace",
-					[]string{
-						workspace,
-						"--window-id", windowID,
-					},
-				).
-				Return(
-					&client.Response{
-						StdOut: "",
-					},
-					nil,
-				)
+				mockConn.EXPECT().
+					SendCommand(
+						"move-node-to-workspace",
+						[]string{workspace},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
 
-			intWindowID, err := strconv.Atoi(windowID)
-			if err != nil {
-				t.Fatalf("failed to convert window ID to int: %v", err)
-			}
+				err := service.MoveWindowToWorkspace(workspace)
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
 
-			err = service.MoveWindowToWorkspace(intWindowID, workspace)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
+		t.Run("MoveWindowToWorkspaceWithOpts", func(tt *testing.T) {
+			tt.Run("with window ID", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				windowID := 12345
+				workspace := "42"
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-node-to-workspace",
+						[]string{
+							workspace,
+							"--window-id", "12345",
+						},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWindowToWorkspaceWithOpts(workspace, MoveWindowToWorkspaceOpts{
+					WindowID: &windowID,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("with all options", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				windowID := 12345
+				workspace := "next"
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-node-to-workspace",
+						[]string{
+							workspace,
+							"--window-id", "12345",
+							"--focus-follows-window",
+							"--fail-if-noop",
+							"--wrap-around",
+						},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWindowToWorkspaceWithOpts(workspace, MoveWindowToWorkspaceOpts{
+					WindowID:           &windowID,
+					FocusFollowsWindow: true,
+					FailIfNoop:         true,
+					WrapAround:         true,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
 		})
 	})
 
