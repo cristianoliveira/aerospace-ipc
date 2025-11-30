@@ -58,8 +58,9 @@ func main() {
 				log.Fatalf("No window with index %d", index)
 			}
 
-			err = client.Windows().SetFocusByWindowID(windows.SetFocusArgs{
-				WindowID: windows[index].WindowID,
+			windowID := windows[index].WindowID
+			err = client.Windows().SetFocus(windows.SetFocusArgs{
+				WindowID: &windowID,
 			})
 			if err != nil {
 				log.Fatalf("Failed to focus on window: %v", err)

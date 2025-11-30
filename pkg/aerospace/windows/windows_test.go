@@ -198,8 +198,8 @@ func TestWindowService(t *testing.T) {
 			}
 		})
 
-		t.Run("SetFocusByWindowID", func(tt *testing.T) {
-			tt.Run("standard", func(ttt *testing.T) {
+		t.Run("SetFocus", func(tt *testing.T) {
+			tt.Run("by window ID", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -218,17 +218,16 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByWindowID(SetFocusArgs{
-					WindowID: 123456,
+				windowID := 123456
+				err := service.SetFocus(SetFocusArgs{
+					WindowID: &windowID,
 				})
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
-		})
 
-		t.Run("SetFocusByWindowIDWithOpts", func(tt *testing.T) {
-			tt.Run("with ignore floating", func(ttt *testing.T) {
+			tt.Run("by window ID with options", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -247,8 +246,9 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByWindowIDWithOpts(SetFocusArgs{
-					WindowID: 123456,
+				windowID := 123456
+				err := service.SetFocusWithOpts(SetFocusArgs{
+					WindowID: &windowID,
 				}, SetFocusOpts{
 					IgnoreFloating: true,
 				})
@@ -256,10 +256,8 @@ func TestWindowService(t *testing.T) {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
-		})
 
-		t.Run("SetFocusByDirection", func(tt *testing.T) {
-			tt.Run("standard", func(ttt *testing.T) {
+			tt.Run("by direction", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -278,17 +276,16 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByDirection(SetFocusByDirectionArgs{
-					Direction: "left",
+				direction := "left"
+				err := service.SetFocus(SetFocusArgs{
+					Direction: &direction,
 				})
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
-		})
 
-		t.Run("SetFocusByDirectionWithOpts", func(tt *testing.T) {
-			tt.Run("with all options", func(ttt *testing.T) {
+			tt.Run("by direction with all options", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -309,9 +306,10 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByDirectionWithOpts(SetFocusByDirectionArgs{
-					Direction: "left",
-				}, SetFocusByDirectionOpts{
+				direction := "left"
+				err := service.SetFocusWithOpts(SetFocusArgs{
+					Direction: &direction,
+				}, SetFocusOpts{
 					IgnoreFloating:  true,
 					Boundaries:      &boundaries,
 					BoundariesAction: &action,
@@ -320,10 +318,8 @@ func TestWindowService(t *testing.T) {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
-		})
 
-		t.Run("SetFocusByDFS", func(tt *testing.T) {
-			tt.Run("standard", func(ttt *testing.T) {
+			tt.Run("by DFS direction", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -342,17 +338,16 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByDFS(SetFocusByDFSArgs{
-					Direction: "dfs-next",
+				dfsDir := "dfs-next"
+				err := service.SetFocus(SetFocusArgs{
+					DFSDirection: &dfsDir,
 				})
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
-		})
 
-		t.Run("SetFocusByDFSWithOpts", func(tt *testing.T) {
-			tt.Run("with options", func(ttt *testing.T) {
+			tt.Run("by DFS direction with options", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -372,9 +367,10 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByDFSWithOpts(SetFocusByDFSArgs{
-					Direction: "dfs-prev",
-				}, SetFocusByDFSOpts{
+				dfsDir := "dfs-prev"
+				err := service.SetFocusWithOpts(SetFocusArgs{
+					DFSDirection: &dfsDir,
+				}, SetFocusOpts{
 					IgnoreFloating:  true,
 					BoundariesAction: &action,
 				})
@@ -382,10 +378,8 @@ func TestWindowService(t *testing.T) {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
-		})
 
-		t.Run("SetFocusByDFSIndex", func(tt *testing.T) {
-			tt.Run("standard", func(ttt *testing.T) {
+			tt.Run("by DFS index", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -404,8 +398,9 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetFocusByDFSIndex(SetFocusByDFSIndexArgs{
-					DFSIndex: 0,
+				dfsIndex := 0
+				err := service.SetFocus(SetFocusArgs{
+					DFSIndex: &dfsIndex,
 				})
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
@@ -716,23 +711,63 @@ func TestWindowService(t *testing.T) {
 			}
 		})
 
-		t.Run("SetFocusByWindowIDError", func(tt *testing.T) {
-			ctrl := gomock.NewController(tt)
-			defer ctrl.Finish()
+		t.Run("SetFocusError", func(tt *testing.T) {
+			tt.Run("by window ID", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
 
-			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
-			service := NewService(mockConn)
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
 
-			mockConn.EXPECT().
-				SendCommand("focus", []string{"--window-id", "123456"}).
-				Return(nil, fmt.Errorf("failed to focus window"))
+				mockConn.EXPECT().
+					SendCommand("focus", []string{"--window-id", "123456"}).
+					Return(nil, fmt.Errorf("failed to focus window"))
 
-			err := service.SetFocusByWindowID(SetFocusArgs{
-				WindowID: 123456,
+				windowID := 123456
+				err := service.SetFocus(SetFocusArgs{
+					WindowID: &windowID,
+				})
+				if err == nil {
+					ttt.Fatal("expected error, got nil")
+				}
 			})
-			if err == nil {
-				t.Fatal("expected error, got nil")
-			}
+
+			tt.Run("no focus method specified", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				err := service.SetFocus(SetFocusArgs{})
+				if err == nil {
+					ttt.Fatal("expected error, got nil")
+				}
+				if err.Error() != "exactly one of WindowID, Direction, DFSDirection, or DFSIndex must be set" {
+					ttt.Fatalf("unexpected error message: %v", err)
+				}
+			})
+
+			tt.Run("multiple focus methods specified", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				windowID := 123456
+				direction := "left"
+				err := service.SetFocus(SetFocusArgs{
+					WindowID:  &windowID,
+					Direction: &direction,
+				})
+				if err == nil {
+					ttt.Fatal("expected error, got nil")
+				}
+				if err.Error() != "only one of WindowID, Direction, DFSDirection, or DFSIndex can be set" {
+					ttt.Fatalf("unexpected error message: %v", err)
+				}
+			})
 		})
 	})
 }

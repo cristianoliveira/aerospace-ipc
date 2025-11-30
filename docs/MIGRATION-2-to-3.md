@@ -19,6 +19,7 @@ The library has been refactored to use a service-based architecture, providing b
 2. **Client Creation**: Function names changed
 3. **Method Access**: Methods are now organized into services
 4. **Type Access**: Types are now in their respective service packages
+5. **Unified SetFocus API**: All focus operations now use a single `SetFocus` method with a unified `SetFocusArgs` struct that supports window ID, direction, DFS direction, and DFS index
 
 ## Migration Steps
 
@@ -85,50 +86,55 @@ focusedWindow, err := client.Windows().GetFocusedWindow()
 // Get windows by workspace
 windows, err := client.Windows().GetAllWindowsByWorkspace("my-workspace")
 
-// Set focus (standard)
-err := client.Windows().SetFocusByWindowID(windows.SetFocusArgs{
-    WindowID: windowID,
+// Set focus using unified API - by window ID
+windowID := 12345
+err := client.Windows().SetFocus(windows.SetFocusArgs{
+    WindowID: &windowID,
 })
 
-// Set focus (ignoring floating windows)
-err := client.Windows().SetFocusByWindowIDWithOpts(windows.SetFocusArgs{
-    WindowID: windowID,
+// Set focus by window ID with options (ignoring floating windows)
+err := client.Windows().SetFocusWithOpts(windows.SetFocusArgs{
+    WindowID: &windowID,
 }, windows.SetFocusOpts{
     IgnoreFloating: true,
 })
 
 // Set focus by direction (left, down, up, right)
-err := client.Windows().SetFocusByDirection(windows.SetFocusByDirectionArgs{
-    Direction: "left",
+direction := "left"
+err := client.Windows().SetFocus(windows.SetFocusArgs{
+    Direction: &direction,
 })
 
 // Set focus by direction with options
 boundaries := "workspace"
 action := "wrap-around-the-workspace"
-err := client.Windows().SetFocusByDirectionWithOpts(windows.SetFocusByDirectionArgs{
-    Direction: "left",
-}, windows.SetFocusByDirectionOpts{
+err := client.Windows().SetFocusWithOpts(windows.SetFocusArgs{
+    Direction: &direction,
+}, windows.SetFocusOpts{
     IgnoreFloating:  true,
     Boundaries:      &boundaries,
     BoundariesAction: &action,
 })
 
-// Set focus by DFS (dfs-next, dfs-prev)
-err := client.Windows().SetFocusByDFS(windows.SetFocusByDFSArgs{
-    Direction: "dfs-next",
+// Set focus by DFS direction (dfs-next, dfs-prev)
+dfsDir := "dfs-next"
+err := client.Windows().SetFocus(windows.SetFocusArgs{
+    DFSDirection: &dfsDir,
 })
 
-// Set focus by DFS with options
-err := client.Windows().SetFocusByDFSWithOpts(windows.SetFocusByDFSArgs{
-    Direction: "dfs-prev",
-}, windows.SetFocusByDFSOpts{
-    IgnoreFloating: true,
+// Set focus by DFS direction with options
+dfsDir = "dfs-prev"
+err := client.Windows().SetFocusWithOpts(windows.SetFocusArgs{
+    DFSDirection: &dfsDir,
+}, windows.SetFocusOpts{
+    IgnoreFloating:  true,
     BoundariesAction: &action,
 })
 
 // Set focus by DFS index
-err := client.Windows().SetFocusByDFSIndex(windows.SetFocusByDFSIndexArgs{
-    DFSIndex: 0,
+dfsIndex := 0
+err := client.Windows().SetFocus(windows.SetFocusArgs{
+    DFSIndex: &dfsIndex,
 })
 
 // Set layout for focused window (standard)
@@ -340,6 +346,7 @@ func main() {
 - **Clearer API Boundaries**: Each service has a focused responsibility
 - **Easier Testing**: Services can be tested and mocked independently
 - **More Intuitive**: Method names clearly indicate which service they belong to
+- **Unified Focus API**: All focus operations (by window ID, direction, DFS, DFS index) use a single `SetFocus` method with a unified args struct, making it easier to switch between focus methods
 
 ## Need Help?
 
