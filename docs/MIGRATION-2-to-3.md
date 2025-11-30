@@ -85,11 +85,21 @@ focusedWindow, err := client.Windows().GetFocusedWindow()
 // Get windows by workspace
 windows, err := client.Windows().GetAllWindowsByWorkspace("my-workspace")
 
-// Set focus
-err := client.Windows().SetFocusByWindowID(windowID)
+// Set focus (with default options)
+err := client.Windows().SetFocusByWindowID(windowID, nil)
 
-// Set layout
-err := client.Windows().SetLayout(windowID, "floating")
+// Set focus (ignoring floating windows)
+err := client.Windows().SetFocusByWindowID(windowID, &windows.SetFocusOpts{
+    IgnoreFloating: true,
+})
+
+// Set layout for focused window
+err := client.Windows().SetLayout("floating", nil)
+
+// Set layout for specific window
+err := client.Windows().SetLayout("floating", &windows.SetLayoutOpts{
+    WindowID: &windowID,
+})
 ```
 
 ### 4. Update Workspace Operations

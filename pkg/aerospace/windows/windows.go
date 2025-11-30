@@ -71,6 +71,19 @@ type Service struct {
 	client client.AeroSpaceConnection
 }
 
+// SetFocusOpts contains optional parameters for SetFocusByWindowID.
+type SetFocusOpts struct {
+	// IgnoreFloating don't perceive floating windows as part of the tree.
+	// It may be useful for more reliable scripting.
+	IgnoreFloating bool
+}
+
+// SetLayoutOpts contains optional parameters for SetLayout.
+type SetLayoutOpts struct {
+	// WindowID specifies the window ID to set layout for. If not set, the focused window is used.
+	WindowID *int
+}
+
 // WindowsService defines the interface for window operations in AeroSpaceWM.
 type WindowsService interface {
 	// GetAllWindows returns all windows currently managed by the window manager.
@@ -83,10 +96,13 @@ type WindowsService interface {
 	GetFocusedWindow() (*Window, error)
 
 	// SetFocusByWindowID sets the focus to a window specified by its ID.
-	SetFocusByWindowID(windowID int) error
+	// opts can be nil to use default options.
+	SetFocusByWindowID(windowID int, opts *SetFocusOpts) error
 
-	// SetLayout sets the layout for a specified window.
-	SetLayout(windowID int, layout string) error
+	// SetLayout sets the layout for a window.
+	// layout is required and can be one of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+	// opts can be nil to use default options (set layout for focused window).
+	SetLayout(layout string, opts *SetLayoutOpts) error
 }
 
 // NewService creates a new window service with the given AeroSpace client connection.
@@ -216,23 +232,33 @@ func (s *Service) GetFocusedWindow() (*Window, error) {
 
 // SetFocusByWindowID sets the focus to a window specified by its ID.
 //
+// opts can be nil to use default options.
+//
 // It is equivalent to running the command:
 //
-//	aerospace focus --window-id <window-id>
+//	aerospace focus --window-id <window-id> [--ignore-floating]
 //
 // Returns an error if the operation fails.
 //
 // Usage:
 //
-//	err := windowService.SetFocusByWindowID(12345)
-//	fmt.Println("Error:", err)
-func (s *Service) SetFocusByWindowID(windowID int) error {
-	response, err := s.client.SendCommand(
-		"focus",
-		[]string{
-			"--window-id", fmt.Sprintf("%d", windowID),
-		},
-	)
+//	// Focus window with default options
+//	err := windowService.SetFocusByWindowID(12345, nil)
+//
+//	// Focus window ignoring floating windows
+//	err := windowService.SetFocusByWindowID(12345, &windows.SetFocusOpts{
+//	    IgnoreFloating: true,
+//	})
+func (s *Service) SetFocusByWindowID(windowID int, opts *SetFocusOpts) error {
+	args := []string{
+		"--window-id", fmt.Sprintf("%d", windowID),
+	}
+
+	if opts != nil && opts.IgnoreFloating {
+		args = append(args, "--ignore-floating")
+	}
+
+	response, err := s.client.SendCommand("focus", args)
 	if err != nil {
 		return err
 	}
@@ -244,11 +270,14 @@ func (s *Service) SetFocusByWindowID(windowID int) error {
 	return nil
 }
 
-// SetLayout sets the layout for a specified window.
+// SetLayout sets the layout for a window.
+//
+// layout is required and can be one of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+// opts can be nil to use default options (set layout for focused window).
 //
 // It is equivalent to running the command:
 //
-//	aerospace layout <layout> --window-id <window-id>
+//	aerospace layout <layout> [--window-id <window-id>]
 //
 // Available layouts:
 //
@@ -258,21 +287,25 @@ func (s *Service) SetFocusByWindowID(windowID int) error {
 //
 // Usage:
 //
-//	err := windowService.SetLayout(12345, "floating")
-//	fmt.Println("Error:", err)
-func (s *Service) SetLayout(windowID int, layout string) error {
-	windowStr := fmt.Sprintf("%d", windowID)
-	if _, err := s.client.SendCommand(
-		"layout",
-		[]string{
-			layout,
-			"--window-id", windowStr,
-		},
-	); err != nil {
+//	// Set layout for focused window
+//	err := windowService.SetLayout("floating", nil)
+//
+//	// Set layout for specific window
+//	windowID := 12345
+//	err := windowService.SetLayout("floating", &windows.SetLayoutOpts{
+//	    WindowID: &windowID,
+//	})
+func (s *Service) SetLayout(layout string, opts *SetLayoutOpts) error {
+	args := []string{layout}
+
+	if opts != nil && opts.WindowID != nil {
+		args = append(args, "--window-id", fmt.Sprintf("%d", *opts.WindowID))
+	}
+
+	if _, err := s.client.SendCommand("layout", args); err != nil {
 		return fmt.Errorf(
-			"failed to set layout '%s' for window %d\nReason:%w",
+			"failed to set layout '%s'\nReason:%w",
 			layout,
-			windowID,
 			err,
 		)
 	}
