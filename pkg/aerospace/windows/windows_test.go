@@ -255,7 +255,7 @@ func TestWindowService(t *testing.T) {
 		})
 
 		t.Run("SetLayout", func(tt *testing.T) {
-			tt.Run("standard (focused window)", func(ttt *testing.T) {
+			tt.Run("standard single layout (focused window)", func(ttt *testing.T) {
 				ctrl := gomock.NewController(ttt)
 				defer ctrl.Finish()
 
@@ -274,7 +274,63 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetLayout("floating")
+				err := service.SetLayout(SetLayoutArgs{
+					Layouts: []string{"floating"},
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("toggle between layouts", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("layout", []string{"floating", "tiling"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetLayout(SetLayoutArgs{
+					Layouts: []string{"floating", "tiling"},
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("toggle orientation", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand("layout", []string{"horizontal", "vertical"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetLayout(SetLayoutArgs{
+					Layouts: []string{"horizontal", "vertical"},
+				})
 				if err != nil {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
@@ -302,7 +358,39 @@ func TestWindowService(t *testing.T) {
 						nil,
 					)
 
-				err := service.SetLayoutWithOpts("floating", SetLayoutOpts{
+				err := service.SetLayoutWithOpts(SetLayoutArgs{
+					Layouts: []string{"floating"},
+				}, SetLayoutOpts{
+					WindowID: &windowID,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("toggle layout for specific window", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				windowID := 123456
+				mockConn.EXPECT().
+					SendCommand("layout", []string{"floating", "tiling", "--window-id", "123456"}).
+					Return(
+						&client.Response{
+							ServerVersion: "1.0",
+							StdOut:        "",
+							StdErr:        "",
+							ExitCode:      0,
+						},
+						nil,
+					)
+
+				err := service.SetLayoutWithOpts(SetLayoutArgs{
+					Layouts: []string{"floating", "tiling"},
+				}, SetLayoutOpts{
 					WindowID: &windowID,
 				})
 				if err != nil {

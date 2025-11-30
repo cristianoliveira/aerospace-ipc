@@ -94,10 +94,29 @@ err := client.Windows().SetFocusByWindowIDWithOpts(windowID, windows.SetFocusOpt
 })
 
 // Set layout for focused window (standard)
-err := client.Windows().SetLayout("floating")
+err := client.Windows().SetLayout(windows.SetLayoutArgs{
+    Layouts: []string{"floating"},
+})
+
+// Toggle between layouts (order doesn't matter)
+err := client.Windows().SetLayout(windows.SetLayoutArgs{
+    Layouts: []string{"floating", "tiling"},
+})
+err := client.Windows().SetLayout(windows.SetLayoutArgs{
+    Layouts: []string{"horizontal", "vertical"},
+})
 
 // Set layout for specific window
-err := client.Windows().SetLayoutWithOpts("floating", windows.SetLayoutOpts{
+err := client.Windows().SetLayoutWithOpts(windows.SetLayoutArgs{
+    Layouts: []string{"floating"},
+}, windows.SetLayoutOpts{
+    WindowID: &windowID,
+})
+
+// Toggle layout for specific window
+err := client.Windows().SetLayoutWithOpts(windows.SetLayoutArgs{
+    Layouts: []string{"floating", "tiling"},
+}, windows.SetLayoutOpts{
     WindowID: &windowID,
 })
 ```
