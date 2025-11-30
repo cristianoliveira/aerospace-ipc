@@ -71,6 +71,24 @@ type Service struct {
 	client client.AeroSpaceConnection
 }
 
+// WindowsService defines the interface for window operations in AeroSpaceWM.
+type WindowsService interface {
+	// GetAllWindows returns all windows currently managed by the window manager.
+	GetAllWindows() ([]Window, error)
+
+	// GetAllWindowsByWorkspace returns all windows in a specified workspace.
+	GetAllWindowsByWorkspace(workspaceName string) ([]Window, error)
+
+	// GetFocusedWindow returns the currently focused window.
+	GetFocusedWindow() (*Window, error)
+
+	// SetFocusByWindowID sets the focus to a window specified by its ID.
+	SetFocusByWindowID(windowID int) error
+
+	// SetLayout sets the layout for a specified window.
+	SetLayout(windowID int, layout string) error
+}
+
 // NewService creates a new window service with the given AeroSpace client connection.
 func NewService(client client.AeroSpaceConnection) *Service {
 	return &Service{client: client}
