@@ -40,13 +40,15 @@ func TestWindow(t *testing.T) {
 			{
 				title: "Window with more fields",
 				window: Window{
-					WindowID:    101,
-					WindowTitle: "Another Window",
-					AppName:     "EmptyTitleApp",
-					AppBundleID: "com.example.app",
-					Workspace:   "Workspace1",
+					WindowID:                   101,
+					WindowTitle:                 "Another Window",
+					AppName:                     "EmptyTitleApp",
+					WindowLayout:                "floating",
+					WindowParentContainerLayout: "floating",
+					AppBundleID:                 "com.example.app",
+					Workspace:                   "Workspace1",
 				},
-				expected: "101 | EmptyTitleApp | Another Window | Workspace1 | com.example.app",
+				expected: "101 | EmptyTitleApp | Another Window | floating | floating | Workspace1 | com.example.app",
 			},
 		}
 		for _, tc := range testCases {
@@ -83,7 +85,7 @@ func TestWindowService(t *testing.T) {
 					[]string{
 						"--all",
 						"--json",
-						"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+						"--format", formatArguments,
 					},
 				).
 				Return(
@@ -131,7 +133,7 @@ func TestWindowService(t *testing.T) {
 					[]string{
 						"--workspace", "my-workspace",
 						"--json",
-						"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+						"--format", formatArguments,
 					},
 				).
 				Return(
@@ -178,7 +180,7 @@ func TestWindowService(t *testing.T) {
 					[]string{
 						"--focused",
 						"--json",
-						"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+						"--format", formatArguments,
 					},
 				).
 				Return(
@@ -579,7 +581,7 @@ func TestWindowService(t *testing.T) {
 					[]string{
 						"--all",
 						"--json",
-						"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+						"--format", formatArguments,
 					},
 				).
 				Return(
@@ -622,7 +624,7 @@ func TestWindowService(t *testing.T) {
 					[]string{
 						"--all",
 						"--json",
-						"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+						"--format", formatArguments,
 					},
 				).
 				Return(nil, fmt.Errorf("connection error"))
@@ -647,7 +649,7 @@ func TestWindowService(t *testing.T) {
 					[]string{
 						"--workspace", workspaceName,
 						"--json",
-						"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+						"--format", formatArguments,
 					},
 				).
 				Return(nil, fmt.Errorf("workspace not found"))
@@ -671,7 +673,7 @@ func TestWindowService(t *testing.T) {
 					[]string{
 						"--focused",
 						"--json",
-						"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+						"--format", formatArguments,
 					},
 				).
 				Return(nil, fmt.Errorf("no focused window found"))
@@ -700,7 +702,7 @@ func TestWindowService(t *testing.T) {
 					[]string{
 						"--focused",
 						"--json",
-						"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+						"--format", formatArguments,
 					},
 				).
 				Return(
