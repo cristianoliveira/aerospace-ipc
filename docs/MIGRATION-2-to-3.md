@@ -132,6 +132,52 @@ err := client.Windows().SetFocusByDFSWithOpts(windows.SetFocusByDFSArgs{
 err := client.Windows().SetFocusByDFSIndex(windows.SetFocusByDFSIndexArgs{
     DFSIndex: 0,
 })
+```
+
+**New Recommended Approach (using Focus Service):**
+
+The focus operations have been moved to a dedicated `Focus` service, which better reflects that focus is independent of windows, workspaces, or any specific node in AeroSpace. The old methods in the `Windows` service still work but are deprecated.
+
+```go
+import (
+    "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
+    "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
+)
+
+// Focus by window ID (simple)
+err := client.Focus().SetFocusByWindowID(12345)
+
+// Focus by window ID with options
+err := client.Focus().SetFocusByWindowID(12345, focus.SetFocusOpts{
+    IgnoreFloating: true,
+})
+
+// Focus by direction
+err := client.Focus().SetFocusByDirection("left")
+
+// Focus by direction with all options
+boundaries := "workspace"
+action := "wrap-around-the-workspace"
+err := client.Focus().SetFocusByDirection("left", focus.SetFocusOpts{
+    IgnoreFloating:  true,
+    Boundaries:      &boundaries,
+    BoundariesAction: &action,
+})
+
+// Focus by DFS
+err := client.Focus().SetFocusByDFS("dfs-next")
+
+// Focus by DFS with options
+err := client.Focus().SetFocusByDFS("dfs-prev", focus.SetFocusOpts{
+    IgnoreFloating:  true,
+    BoundariesAction: &action,
+})
+
+// Focus by DFS index
+err := client.Focus().SetFocusByDFSIndex(0)
+```
+
+**Note:** The old `client.Windows().SetFocus*` methods still work for backward compatibility but are deprecated. They internally delegate to the new `Focus` service. We recommend migrating to the new `Focus` service API.
 
 // Set layout for focused window (standard)
 err := client.Windows().SetLayout(windows.SetLayoutArgs{
@@ -206,7 +252,51 @@ err := client.Workspaces().MoveWindowToWorkspaceWithOpts(workspaces.MoveWindowTo
 })
 ```
 
-### 5. Update Type References
+### 5. Update Focus Operations (New in v3.x)
+
+A new `Focus` service has been introduced to handle all focus operations. This better reflects the architecture of AeroSpace, where focus is independent of windows, workspaces, or any specific node.
+
+**Old Approach (still works but deprecated):**
+```go
+import "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/windows"
+
+// All focus operations were in the Windows service
+err := client.Windows().SetFocusByWindowID(windows.SetFocusArgs{
+    WindowID: 12345,
+})
+```
+
+**New Recommended Approach:**
+```go
+import "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
+
+// Separate, well-named methods for each focus operation
+err := client.Focus().SetFocusByWindowID(12345)
+
+// With options
+err := client.Focus().SetFocusByWindowID(12345, focus.SetFocusOpts{
+    IgnoreFloating: true,
+})
+
+// Direction focus
+err := client.Focus().SetFocusByDirection("left")
+
+// DFS focus
+err := client.Focus().SetFocusByDFS("dfs-next")
+
+// DFS index focus
+err := client.Focus().SetFocusByDFSIndex(0)
+```
+
+**Benefits:**
+- Clear, explicit method names for each operation
+- Type-safe at compile time (can't mix wrong arguments)
+- Better discoverability (autocomplete shows all options)
+- Better separation of concerns (focus is independent)
+- More consistent with AeroSpace architecture
+- Matches the pattern used by Windows and Workspaces services
+
+### 6. Update Type References
 
 **Before:**
 ```go
@@ -228,7 +318,7 @@ var window windows.Window
 var workspace workspaces.Workspace
 ```
 
-### 6. Low-Level Connection Access
+### 7. Low-Level Connection Access
 
 The low-level connection access remains the same:
 
@@ -247,7 +337,7 @@ path, err := conn.GetSocketPath()
 err := conn.CheckServerVersion()
 ```
 
-### 7. Error Handling
+### 8. Error Handling
 
 Error handling remains the same:
 
@@ -310,6 +400,7 @@ import (
     "log"
 
     "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
+    "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
 )
 
 func main() {
@@ -333,15 +424,25 @@ func main() {
         log.Fatalf("Failed to get workspace: %v", err)
     }
     fmt.Printf("Focused workspace: %s\n", workspace.Workspace)
+
+    // Example: Focus a window using the new Focus service
+    if len(windows) > 0 {
+        err = client.Focus().SetFocusByWindowID(windows[0].WindowID)
+        if err != nil {
+            log.Fatalf("Failed to set focus: %v", err)
+        }
+    }
 }
 ```
 
 ## Benefits of the New API
 
-- **Better Organization**: Methods are grouped by domain (windows, workspaces)
+- **Better Organization**: Methods are grouped by domain (windows, workspaces, focus)
 - **Clearer API Boundaries**: Each service has a focused responsibility
 - **Easier Testing**: Services can be tested and mocked independently
 - **More Intuitive**: Method names clearly indicate which service they belong to
+- **Unified Focus API**: Single `SetFocus` method replaces 7 separate methods
+- **Architectural Alignment**: Focus service matches AeroSpace's design where focus is independent
 
 ## Need Help?
 

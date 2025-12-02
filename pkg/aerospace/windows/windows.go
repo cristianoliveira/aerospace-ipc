@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
 )
 
@@ -342,6 +343,8 @@ func (s *Service) GetFocusedWindow() (*Window, error) {
 //	err := windowService.SetFocusByWindowID(windows.SetFocusArgs{
 //	    WindowID: 12345,
 //	})
+//
+// Deprecated: Use client.Focus().SetFocusByWindowID() instead. This method is kept for backward compatibility.
 func (s *Service) SetFocusByWindowID(args SetFocusArgs) error {
 	return s.SetFocusByWindowIDWithOpts(args, SetFocusOpts{})
 }
@@ -364,25 +367,14 @@ func (s *Service) SetFocusByWindowID(args SetFocusArgs) error {
 //	}, windows.SetFocusOpts{
 //	    IgnoreFloating: true,
 //	})
+//
+// Deprecated: Use client.Focus().SetFocusByWindowID() instead. This method is kept for backward compatibility.
 func (s *Service) SetFocusByWindowIDWithOpts(args SetFocusArgs, opts SetFocusOpts) error {
-	cmdArgs := []string{
-		"--window-id", fmt.Sprintf("%d", args.WindowID),
+	focusService := focus.NewService(s.client)
+	focusOpts := focus.SetFocusOpts{
+		IgnoreFloating: opts.IgnoreFloating,
 	}
-
-	if opts.IgnoreFloating {
-		cmdArgs = append(cmdArgs, "--ignore-floating")
-	}
-
-	response, err := s.client.SendCommand("focus", cmdArgs)
-	if err != nil {
-		return err
-	}
-
-	if response.ExitCode != 0 {
-		return fmt.Errorf("failed to focus window with ID %d\n%s", args.WindowID, response.StdErr)
-	}
-
-	return nil
+	return focusService.SetFocusByWindowID(args.WindowID, focusOpts)
 }
 
 // SetFocusByDirection sets focus to the nearest window in the given direction.
@@ -398,6 +390,8 @@ func (s *Service) SetFocusByWindowIDWithOpts(args SetFocusArgs, opts SetFocusOpt
 //	err := windowService.SetFocusByDirection(windows.SetFocusByDirectionArgs{
 //	    Direction: "left",
 //	})
+//
+// Deprecated: Use client.Focus().SetFocusByWindowID() instead. This method is kept for backward compatibility.
 func (s *Service) SetFocusByDirection(args SetFocusByDirectionArgs) error {
 	return s.SetFocusByDirectionWithOpts(args, SetFocusByDirectionOpts{})
 }
@@ -423,29 +417,16 @@ func (s *Service) SetFocusByDirection(args SetFocusByDirectionArgs) error {
 //	    Boundaries:      &boundaries,
 //	    BoundariesAction: &action,
 //	})
+//
+// Deprecated: Use client.Focus().SetFocusByDirection() instead. This method is kept for backward compatibility.
 func (s *Service) SetFocusByDirectionWithOpts(args SetFocusByDirectionArgs, opts SetFocusByDirectionOpts) error {
-	cmdArgs := []string{args.Direction}
-
-	if opts.IgnoreFloating {
-		cmdArgs = append(cmdArgs, "--ignore-floating")
+	focusService := focus.NewService(s.client)
+	focusOpts := focus.SetFocusOpts{
+		IgnoreFloating:  opts.IgnoreFloating,
+		Boundaries:      opts.Boundaries,
+		BoundariesAction: opts.BoundariesAction,
 	}
-	if opts.Boundaries != nil {
-		cmdArgs = append(cmdArgs, "--boundaries", *opts.Boundaries)
-	}
-	if opts.BoundariesAction != nil {
-		cmdArgs = append(cmdArgs, "--boundaries-action", *opts.BoundariesAction)
-	}
-
-	response, err := s.client.SendCommand("focus", cmdArgs)
-	if err != nil {
-		return err
-	}
-
-	if response.ExitCode != 0 {
-		return fmt.Errorf("failed to focus window in direction %s\n%s", args.Direction, response.StdErr)
-	}
-
-	return nil
+	return focusService.SetFocusByDirection(args.Direction, focusOpts)
 }
 
 // SetFocusByDFS sets focus to the window before or after the current window in depth-first order.
@@ -461,6 +442,8 @@ func (s *Service) SetFocusByDirectionWithOpts(args SetFocusByDirectionArgs, opts
 //	err := windowService.SetFocusByDFS(windows.SetFocusByDFSArgs{
 //	    Direction: "dfs-next",
 //	})
+//
+// Deprecated: Use client.Focus().SetFocusByWindowID() instead. This method is kept for backward compatibility.
 func (s *Service) SetFocusByDFS(args SetFocusByDFSArgs) error {
 	return s.SetFocusByDFSWithOpts(args, SetFocusByDFSOpts{})
 }
@@ -484,29 +467,16 @@ func (s *Service) SetFocusByDFS(args SetFocusByDFSArgs) error {
 //	    IgnoreFloating:  true,
 //	    BoundariesAction: &action,
 //	})
+//
+// Deprecated: Use client.Focus().SetFocusByDFS() instead. This method is kept for backward compatibility.
 func (s *Service) SetFocusByDFSWithOpts(args SetFocusByDFSArgs, opts SetFocusByDFSOpts) error {
-	cmdArgs := []string{args.Direction}
-
-	if opts.IgnoreFloating {
-		cmdArgs = append(cmdArgs, "--ignore-floating")
+	focusService := focus.NewService(s.client)
+	focusOpts := focus.SetFocusOpts{
+		IgnoreFloating:  opts.IgnoreFloating,
+		Boundaries:      opts.Boundaries,
+		BoundariesAction: opts.BoundariesAction,
 	}
-	if opts.Boundaries != nil {
-		cmdArgs = append(cmdArgs, "--boundaries", *opts.Boundaries)
-	}
-	if opts.BoundariesAction != nil {
-		cmdArgs = append(cmdArgs, "--boundaries-action", *opts.BoundariesAction)
-	}
-
-	response, err := s.client.SendCommand("focus", cmdArgs)
-	if err != nil {
-		return err
-	}
-
-	if response.ExitCode != 0 {
-		return fmt.Errorf("failed to focus window using DFS direction %s\n%s", args.Direction, response.StdErr)
-	}
-
-	return nil
+	return focusService.SetFocusByDFS(args.Direction, focusOpts)
 }
 
 // SetFocusByDFSIndex sets focus to a window by its DFS index.
@@ -522,21 +492,11 @@ func (s *Service) SetFocusByDFSWithOpts(args SetFocusByDFSArgs, opts SetFocusByD
 //	err := windowService.SetFocusByDFSIndex(windows.SetFocusByDFSIndexArgs{
 //	    DFSIndex: 0,
 //	})
+//
+// Deprecated: Use client.Focus().SetFocusByDFSIndex() instead. This method is kept for backward compatibility.
 func (s *Service) SetFocusByDFSIndex(args SetFocusByDFSIndexArgs) error {
-	cmdArgs := []string{
-		"--dfs-index", fmt.Sprintf("%d", args.DFSIndex),
-	}
-
-	response, err := s.client.SendCommand("focus", cmdArgs)
-	if err != nil {
-		return err
-	}
-
-	if response.ExitCode != 0 {
-		return fmt.Errorf("failed to focus window with DFS index %d\n%s", args.DFSIndex, response.StdErr)
-	}
-
-	return nil
+	focusService := focus.NewService(s.client)
+	return focusService.SetFocusByDFSIndex(args.DFSIndex)
 }
 
 // SetLayout sets the layout for the focused window.
