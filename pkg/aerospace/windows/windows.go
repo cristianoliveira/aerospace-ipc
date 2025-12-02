@@ -17,27 +17,36 @@ import (
 //	  {
 //	    "window-id" : 6231,
 //	    "workspace" : "8",
+//	    "window-layout" : "floating",
+//	    "window-parent-container-layout" : "floating",
 //	    "app-bundle-id" : "com.brave.Browser",
 //	    "app-name" : "Brave Browser",
 //	  },
 //	  {
 //	    "window-id" : 10772,
 //	    "workspace" : ".scratchpad",
+//	    "window-layout" : "h_tiles",
+//	    "window-parent-container-layout" : "h_tiles",
 //	    "app-name" : "WhatsApp",
 //	    "app-bundle-id" : "net.whatsapp.WhatsApp"
 //	  }
 //	]
 type Window struct {
-	WindowID    int    `json:"window-id"`
-	WindowTitle string `json:"window-title"`
-	AppName     string `json:"app-name"`
-	AppBundleID string `json:"app-bundle-id"`
-	Workspace   string `json:"workspace"`
+	WindowID                    int    `json:"window-id"`
+	WindowTitle                 string `json:"window-title"`
+	WindowLayout                string `json:"window-layout"`
+	WindowParentContainerLayout string `json:"window-parent-container-layout"`
+	AppName                     string `json:"app-name"`
+	AppBundleID                 string `json:"app-bundle-id"`
+	Workspace                   string `json:"workspace"`
 }
+
+const formatArguments = "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace} %{window-layout} %{window-parent-container-layout}"
 
 // String returns a string representation of the Window struct.
 //
 // It includes the window ID, application name, window title (if available),
+// window layout, window parent container layout, workspace, and app bundle ID.
 //
 // Example:
 //
@@ -45,16 +54,24 @@ type Window struct {
 //	  WindowID:    6231,
 //	  AppName:     "Brave Browser",
 //	  WindowTitle: "Github Page",
+//    WindowLayout: "floating",
+//    WindowParentContainerLayout: "floating",
 //	  Workspace:   "8",
 //	  AppBundleID: "com.brave.Browser",
 //	}
 //	fmt.Println(window)
 //
-//	// Output: 6231  | Brave Browser | Github Page | 8 | com.brave.Browser
+//	// Output: 6231 | Brave Browser | Github Page | floating | floating | 8 | com.brave.Browser
 func (w Window) String() string {
 	builder := fmt.Sprintf("%d | %s ", w.WindowID, w.AppName)
 	if w.WindowTitle != "" {
 		builder += fmt.Sprintf("| %s", w.WindowTitle)
+	}
+	if w.WindowLayout != "" {
+		builder += fmt.Sprintf(" | %s", w.WindowLayout)
+	}
+	if w.WindowParentContainerLayout != "" {
+		builder += fmt.Sprintf(" | %s", w.WindowParentContainerLayout)
 	}
 	if w.Workspace != "" {
 		builder += fmt.Sprintf(" | %s", w.Workspace)
@@ -211,7 +228,7 @@ func (s *Service) GetAllWindows() ([]Window, error) {
 		[]string{
 			"--all",
 			"--json",
-			"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+			"--format", formatArguments,
 		},
 	)
 	if err != nil {
@@ -249,7 +266,7 @@ func (s *Service) GetAllWindowsByWorkspace(workspaceName string) ([]Window, erro
 		[]string{
 			"--workspace", workspaceName,
 			"--json",
-			"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+			"--format", formatArguments,
 		},
 	)
 	if err != nil {
@@ -288,7 +305,7 @@ func (s *Service) GetFocusedWindow() (*Window, error) {
 		[]string{
 			"--focused",
 			"--json",
-			"--format", "%{window-id} %{window-title} %{app-name} %{app-bundle-id} %{workspace}",
+			"--format", formatArguments,
 		},
 	)
 	if err != nil {
