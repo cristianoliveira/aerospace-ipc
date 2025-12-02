@@ -134,6 +134,8 @@ err := client.Windows().SetFocusByDFSIndex(windows.SetFocusByDFSIndexArgs{
 })
 ```
 
+**Note:** Focus operations have been moved to a dedicated `Focus` service. See section 5 for migration details.
+
 **New Recommended Approach (using Focus Service):**
 
 The focus operations have been moved to a dedicated `Focus` service, which better reflects that focus is independent of windows, workspaces, or any specific node in AeroSpace. The old methods in the `Windows` service still work but are deprecated.
@@ -179,32 +181,8 @@ err := client.Focus().SetFocusByDFSIndex(0)
 
 **Note:** The old `client.Windows().SetFocus*` methods still work for backward compatibility but are deprecated. They internally delegate to the new `Focus` service. We recommend migrating to the new `Focus` service API.
 
-// Set layout for focused window (standard)
-err := client.Windows().SetLayout(windows.SetLayoutArgs{
-    Layouts: []string{"floating"},
-})
+**Note:** Layout operations have been moved to a dedicated `Layout` service. The old `client.Windows().SetLayout*` methods still work but are deprecated. See section 6 for migration details.
 
-// Toggle between layouts (order doesn't matter)
-err := client.Windows().SetLayout(windows.SetLayoutArgs{
-    Layouts: []string{"floating", "tiling"},
-})
-err := client.Windows().SetLayout(windows.SetLayoutArgs{
-    Layouts: []string{"horizontal", "vertical"},
-})
-
-// Set layout for specific window
-err := client.Windows().SetLayoutWithOpts(windows.SetLayoutArgs{
-    Layouts: []string{"floating"},
-}, windows.SetLayoutOpts{
-    WindowID: &windowID,
-})
-
-// Toggle layout for specific window
-err := client.Windows().SetLayoutWithOpts(windows.SetLayoutArgs{
-    Layouts: []string{"floating", "tiling"},
-}, windows.SetLayoutOpts{
-    WindowID: &windowID,
-})
 ```
 
 ### 4. Update Workspace Operations
@@ -296,7 +274,93 @@ err := client.Focus().SetFocusByDFSIndex(0)
 - More consistent with AeroSpace architecture
 - Matches the pattern used by Windows and Workspaces services
 
-### 6. Update Type References
+### 6. Update Layout Operations
+
+Layout operations have been moved to a dedicated `Layout` service, which better reflects that layout is a standalone command in AeroSpace.
+
+**Before (v2.x):**
+```go
+import "github.com/cristianoliveira/aerospace-ipc"
+
+// Set layout for a window
+err := client.SetLayout(windowID, "floating")
+```
+
+**After (v3.x - Windows Service - deprecated):**
+```go
+import "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/windows"
+
+// Set layout for focused window (deprecated)
+err := client.Windows().SetLayout(windows.SetLayoutArgs{
+    Layouts: []string{"floating"},
+})
+
+// Set layout for specific window (deprecated)
+windowID := 12345
+err := client.Windows().SetLayoutWithOpts(windows.SetLayoutArgs{
+    Layouts: []string{"floating"},
+}, windows.SetLayoutOpts{
+    WindowID: &windowID,
+})
+```
+
+**Note:** The old `client.Windows().SetLayout*` methods still work for backward compatibility but are deprecated. They internally delegate to the new `Layout` service. We recommend migrating to the new `Layout` service API.
+
+**New Recommended Approach (using Layout Service):**
+```go
+import "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/layout"
+
+// Set layout for focused window
+err := client.Layout().SetLayout([]string{"floating"})
+
+// Toggle between layouts (order doesn't matter)
+err := client.Layout().SetLayout([]string{"floating", "tiling"})
+err := client.Layout().SetLayout([]string{"horizontal", "vertical"})
+
+// Set layout for specific window
+err := client.Layout().SetLayout([]string{"floating"}, layout.SetLayoutOpts{
+    WindowID: layout.IntPtr(12345),
+})
+
+// Toggle layout for specific window
+err := client.Layout().SetLayout([]string{"floating", "tiling"}, layout.SetLayoutOpts{
+    WindowID: layout.IntPtr(12345),
+})
+```
+
+**Migration Examples:**
+
+```go
+// Old (v2.x)
+err := client.SetLayout(windowID, "floating")
+
+// New (v3.x)
+err := client.Layout().SetLayout([]string{"floating"}, layout.SetLayoutOpts{
+    WindowID: layout.IntPtr(windowID),
+})
+```
+
+```go
+// Old (v3.x Windows service - deprecated but still works)
+err := client.Windows().SetLayout(windows.SetLayoutArgs{
+    Layouts: []string{"floating"},
+})
+
+// New (v3.x Layout service - recommended)
+err := client.Layout().SetLayout([]string{"floating"})
+```
+
+**Benefits:**
+- Cleaner API: Direct layout slice instead of args struct
+- Better separation of concerns (layout is independent)
+- More consistent with AeroSpace architecture
+- Matches the pattern used by Focus service
+
+**Migration Helper Functions:**
+The layout package provides helper functions for creating pointers:
+- `layout.IntPtr(int) *int`
+
+### 7. Update Type References
 
 **Before:**
 ```go
