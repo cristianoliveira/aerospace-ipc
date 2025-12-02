@@ -21,7 +21,6 @@ As of now, this library only covers the functionality necessary for implementing
         - Get all windows
         - Get focused window
         - Get windows by workspace
-        - Set window layout
  
     - Workspaces Service (`client.Workspaces()`)
         - Get focused workspace
@@ -32,6 +31,10 @@ As of now, this library only covers the functionality necessary for implementing
         - Set focus by direction (left, down, up, right)
         - Set focus by DFS (dfs-next, dfs-prev)
         - Set focus by DFS index
+
+    - Layout Service (`client.Layout()`)
+        - Set window layout
+        - Toggle between layouts
 
 For the remaining functionality, this library exposes [an AeroSpaceConnection interface](https://github.com/cristianoliveira/aerospace-ipc/blob/main/pkg/client/socket.go#L40), which allows you to send raw commands and receive responses in pure JSON format. Access it via `client.Connection()`.
 
@@ -65,6 +68,7 @@ import (
 
     "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
     "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
+    "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/layout"
 )
 
 func main() {
@@ -107,6 +111,18 @@ func main() {
     })
     if err != nil {
         log.Fatalf("Failed to set focus: %v", err)
+    }
+
+    // Use the Layout service to set layout
+    err = client.Layout().SetLayout([]string{"floating"})
+    if err != nil {
+        log.Fatalf("Failed to set layout: %v", err)
+    }
+
+    // Toggle between layouts
+    err = client.Layout().SetLayout([]string{"floating", "tiling"})
+    if err != nil {
+        log.Fatalf("Failed to toggle layout: %v", err)
     }
 }
 ```

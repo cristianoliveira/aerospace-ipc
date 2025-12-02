@@ -318,7 +318,7 @@ var window windows.Window
 var workspace workspaces.Workspace
 ```
 
-### 7. Low-Level Connection Access
+### 8. Low-Level Connection Access
 
 The low-level connection access remains the same:
 
@@ -337,7 +337,7 @@ path, err := conn.GetSocketPath()
 err := conn.CheckServerVersion()
 ```
 
-### 8. Error Handling
+### 9. Error Handling
 
 Error handling remains the same:
 
@@ -431,18 +431,25 @@ func main() {
         if err != nil {
             log.Fatalf("Failed to set focus: %v", err)
         }
+
+        // Example: Set layout using the new Layout service
+        err = client.Layout().SetLayout([]string{"floating"})
+        if err != nil {
+            log.Fatalf("Failed to set layout: %v", err)
+        }
     }
 }
 ```
 
 ## Benefits of the New API
 
-- **Better Organization**: Methods are grouped by domain (windows, workspaces, focus)
+- **Better Organization**: Methods are grouped by domain (windows, workspaces, focus, layout)
 - **Clearer API Boundaries**: Each service has a focused responsibility
 - **Easier Testing**: Services can be tested and mocked independently
 - **More Intuitive**: Method names clearly indicate which service they belong to
-- **Unified Focus API**: Single `SetFocus` method replaces 7 separate methods
-- **Architectural Alignment**: Focus service matches AeroSpace's design where focus is independent
+- **Separate Focus Methods**: Clear, explicit methods for each focus operation
+- **Separate Layout Service**: Layout operations are independent, matching AeroSpace architecture
+- **Architectural Alignment**: Services match AeroSpace's design where focus and layout are standalone commands
 
 ## Need Help?
 

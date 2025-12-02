@@ -148,20 +148,6 @@ type SetFocusByDFSIndexArgs struct {
 	DFSIndex int
 }
 
-// SetLayoutArgs contains required arguments for SetLayout.
-type SetLayoutArgs struct {
-	// Layouts can be one or more of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
-	// If multiple layouts are provided, finds the first that doesn't describe the currently active layout and applies it.
-	// This is useful for toggling between layouts.
-	Layouts []string
-}
-
-// SetLayoutOpts contains optional parameters for SetLayout.
-type SetLayoutOpts struct {
-	// WindowID specifies the window ID to set layout for. If not set, the focused window is used.
-	WindowID *int
-}
-
 // WindowsService defines the interface for window operations in AeroSpaceWM.
 type WindowsService interface {
 	// GetAllWindows returns all windows currently managed by the window manager.
@@ -196,13 +182,6 @@ type WindowsService interface {
 
 	// SetFocusByDFSIndex sets focus to a window by its DFS index.
 	SetFocusByDFSIndex(args SetFocusByDFSIndexArgs) error
-
-	// SetLayout sets the layout for the focused window.
-	SetLayout(args SetLayoutArgs) error
-
-	// SetLayoutWithOpts sets the layout for a window with options.
-	// opts must be provided and contains optional parameters.
-	SetLayoutWithOpts(args SetLayoutArgs, opts SetLayoutOpts) error
 }
 
 // NewService creates a new window service with the given AeroSpace client connection.
@@ -499,83 +478,3 @@ func (s *Service) SetFocusByDFSIndex(args SetFocusByDFSIndexArgs) error {
 	return focusService.SetFocusByDFSIndex(args.DFSIndex)
 }
 
-// SetLayout sets the layout for the focused window.
-//
-// args.Layouts can be one or more of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
-// If multiple layouts are provided, finds the first that doesn't describe the currently active layout and applies it.
-// This is useful for toggling between layouts.
-//
-// It is equivalent to running the command:
-//
-//	aerospace layout <layout>...
-//
-// Returns an error if the operation fails.
-//
-// Usage:
-//
-//	// Set a single layout
-//	err := windowService.SetLayout(windows.SetLayoutArgs{
-//	    Layouts: []string{"floating"},
-//	})
-//
-//	// Toggle between layouts (order doesn't matter)
-//	err := windowService.SetLayout(windows.SetLayoutArgs{
-//	    Layouts: []string{"floating", "tiling"},
-//	})
-//	err := windowService.SetLayout(windows.SetLayoutArgs{
-//	    Layouts: []string{"horizontal", "vertical"},
-//	})
-func (s *Service) SetLayout(args SetLayoutArgs) error {
-	return s.SetLayoutWithOpts(args, SetLayoutOpts{})
-}
-
-// SetLayoutWithOpts sets the layout for a window with options.
-//
-// args.Layouts can be one or more of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
-// If multiple layouts are provided, finds the first that doesn't describe the currently active layout and applies it.
-// opts must be provided and contains optional parameters.
-//
-// It is equivalent to running the command:
-//
-//	aerospace layout <layout>... [--window-id <window-id>]
-//
-// Returns an error if the operation fails.
-//
-// Usage:
-//
-//	// Set layout for specific window
-//	windowID := 12345
-//	err := windowService.SetLayoutWithOpts(windows.SetLayoutArgs{
-//	    Layouts: []string{"floating"},
-//	}, windows.SetLayoutOpts{
-//	    WindowID: &windowID,
-//	})
-//
-//	// Toggle layout for specific window
-//	err := windowService.SetLayoutWithOpts(windows.SetLayoutArgs{
-//	    Layouts: []string{"floating", "tiling"},
-//	}, windows.SetLayoutOpts{
-//	    WindowID: &windowID,
-//	})
-func (s *Service) SetLayoutWithOpts(args SetLayoutArgs, opts SetLayoutOpts) error {
-	if len(args.Layouts) == 0 {
-		return fmt.Errorf("at least one layout must be provided")
-	}
-
-	cmdArgs := make([]string, 0, len(args.Layouts)+2)
-	cmdArgs = append(cmdArgs, args.Layouts...)
-
-	if opts.WindowID != nil {
-		cmdArgs = append(cmdArgs, "--window-id", fmt.Sprintf("%d", *opts.WindowID))
-	}
-
-	if _, err := s.client.SendCommand("layout", cmdArgs); err != nil {
-		return fmt.Errorf(
-			"failed to set layout(s) %v\nReason:%w",
-			args.Layouts,
-			err,
-		)
-	}
-
-	return nil
-}
