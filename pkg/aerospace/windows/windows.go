@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/layout"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
 )
 
@@ -182,6 +183,13 @@ type WindowsService interface {
 
 	// SetFocusByDFSIndex sets focus to a window by its DFS index.
 	SetFocusByDFSIndex(args SetFocusByDFSIndexArgs) error
+
+	// SetLayout sets the layout for the focused window.
+	SetLayout(args SetLayoutArgs) error
+
+	// SetLayoutWithOpts sets the layout for a window with options.
+	// opts must be provided and contains optional parameters.
+	SetLayoutWithOpts(args SetLayoutArgs, opts SetLayoutOpts) error
 }
 
 // NewService creates a new window service with the given AeroSpace client connection.
@@ -476,5 +484,89 @@ func (s *Service) SetFocusByDFSWithOpts(args SetFocusByDFSArgs, opts SetFocusByD
 func (s *Service) SetFocusByDFSIndex(args SetFocusByDFSIndexArgs) error {
 	focusService := focus.NewService(s.client)
 	return focusService.SetFocusByDFSIndex(args.DFSIndex)
+}
+
+// SetLayoutArgs contains required arguments for SetLayout.
+type SetLayoutArgs struct {
+	// Layouts can be one or more of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+	// If multiple layouts are provided, finds the first that doesn't describe the currently active layout and applies it.
+	// This is useful for toggling between layouts.
+	Layouts []string
+}
+
+// SetLayoutOpts contains optional parameters for SetLayout.
+type SetLayoutOpts struct {
+	// WindowID specifies the window ID to set layout for. If not set, the focused window is used.
+	WindowID *int
+}
+
+// SetLayout sets the layout for the focused window.
+//
+// args.Layouts can be one or more of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+// If multiple layouts are provided, finds the first that doesn't describe the currently active layout and applies it.
+// This is useful for toggling between layouts.
+//
+// It is equivalent to running the command:
+//
+//	aerospace layout <layout>...
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	// Set a single layout
+//	err := windowService.SetLayout(windows.SetLayoutArgs{
+//	    Layouts: []string{"floating"},
+//	})
+//
+//	// Toggle between layouts (order doesn't matter)
+//	err := windowService.SetLayout(windows.SetLayoutArgs{
+//	    Layouts: []string{"floating", "tiling"},
+//	})
+//	err := windowService.SetLayout(windows.SetLayoutArgs{
+//	    Layouts: []string{"horizontal", "vertical"},
+//	})
+//
+// Deprecated: Use client.Layout().SetLayout() instead. This method is kept for backward compatibility.
+func (s *Service) SetLayout(args SetLayoutArgs) error {
+	return s.SetLayoutWithOpts(args, SetLayoutOpts{})
+}
+
+// SetLayoutWithOpts sets the layout for a window with options.
+//
+// args.Layouts can be one or more of: accordion|tiles|horizontal|vertical|h_accordion|v_accordion|h_tiles|v_tiles|tiling|floating
+// If multiple layouts are provided, finds the first that doesn't describe the currently active layout and applies it.
+// opts must be provided and contains optional parameters.
+//
+// It is equivalent to running the command:
+//
+//	aerospace layout <layout>... [--window-id <window-id>]
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	// Set layout for specific window
+//	windowID := 12345
+//	err := windowService.SetLayoutWithOpts(windows.SetLayoutArgs{
+//	    Layouts: []string{"floating"},
+//	}, windows.SetLayoutOpts{
+//	    WindowID: &windowID,
+//	})
+//
+//	// Toggle layout for specific window
+//	err := windowService.SetLayoutWithOpts(windows.SetLayoutArgs{
+//	    Layouts: []string{"floating", "tiling"},
+//	}, windows.SetLayoutOpts{
+//	    WindowID: &windowID,
+//	})
+//
+// Deprecated: Use client.Layout().SetLayout() instead. This method is kept for backward compatibility.
+func (s *Service) SetLayoutWithOpts(args SetLayoutArgs, opts SetLayoutOpts) error {
+	layoutService := layout.NewService(s.client)
+	layoutOpts := layout.SetLayoutOpts{
+		WindowID: opts.WindowID,
+	}
+	return layoutService.SetLayout(args.Layouts, layoutOpts)
 }
 
