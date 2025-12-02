@@ -21,12 +21,17 @@ As of now, this library only covers the functionality necessary for implementing
         - Get all windows
         - Get focused window
         - Get windows by workspace
-        - Set focus by window ID
         - Set window layout
  
     - Workspaces Service (`client.Workspaces()`)
         - Get focused workspace
         - Move window to workspace
+
+    - Focus Service (`client.Focus()`)
+        - Set focus by window ID
+        - Set focus by direction (left, down, up, right)
+        - Set focus by DFS (dfs-next, dfs-prev)
+        - Set focus by DFS index
 
 For the remaining functionality, this library exposes [an AeroSpaceConnection interface](https://github.com/cristianoliveira/aerospace-ipc/blob/main/pkg/client/socket.go#L40), which allows you to send raw commands and receive responses in pure JSON format. Access it via `client.Connection()`.
 
@@ -59,6 +64,7 @@ import (
     "log"
 
     "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
+    "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
 )
 
 func main() {
@@ -94,6 +100,14 @@ func main() {
         log.Fatalf("Failed to get focused workspace: %v", err)
     }
     fmt.Printf("Focused workspace: %s\n", workspace.Workspace)
+
+    // Use the Focus service to set focus
+    err = client.Focus().SetFocusByWindowID(12345, focus.SetFocusOpts{
+        IgnoreFloating: true,
+    })
+    if err != nil {
+        log.Fatalf("Failed to set focus: %v", err)
+    }
 }
 ```
 

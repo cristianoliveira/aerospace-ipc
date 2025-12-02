@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/windows"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/workspaces"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
@@ -19,6 +20,9 @@ type Client interface {
 
 	// Workspaces returns the workspace service for interacting with workspaces.
 	Workspaces() *workspaces.Service
+
+	// Focus returns the focus service for interacting with focus operations.
+	Focus() *focus.Service
 
 	// Connection returns the AeroSpaceWM client.
 	//
@@ -38,6 +42,7 @@ type AeroSpaceWM struct {
 	// Services
 	windowsService    *windows.Service
 	workspacesService *workspaces.Service
+	focusService      *focus.Service
 }
 
 // Windows returns the windows service for interacting with windows.
@@ -54,6 +59,14 @@ func (a *AeroSpaceWM) Workspaces() *workspaces.Service {
 		a.workspacesService = workspaces.NewService(a.conn)
 	}
 	return a.workspacesService
+}
+
+// Focus returns the focus service for interacting with focus operations.
+func (a *AeroSpaceWM) Focus() *focus.Service {
+	if a.focusService == nil {
+		a.focusService = focus.NewService(a.conn)
+	}
+	return a.focusService
 }
 
 // Connection returns the AeroSpaceConnection
