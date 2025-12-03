@@ -76,6 +76,9 @@ type WorkspacesService interface {
 	// MoveWindowToWorkspaceWithOpts moves a window to a specified workspace with options.
 	// opts must be provided and contains optional parameters.
 	MoveWindowToWorkspaceWithOpts(args MoveWindowToWorkspaceArgs, opts MoveWindowToWorkspaceOpts) error
+
+	// MoveBackAndForth switches between the focused workspace and previously focused workspace.
+	MoveBackAndForth() error
 }
 
 // NewService creates a new workspace service with the given AeroSpace client connection.
@@ -210,6 +213,34 @@ func (s *Service) MoveWindowToWorkspaceWithOpts(args MoveWindowToWorkspaceArgs, 
 
 	if response.ExitCode != 0 {
 		return fmt.Errorf("failed to move window to workspace: %s", response.StdErr)
+	}
+
+	return nil
+}
+
+// MoveBackAndForth switches between the focused workspace and previously focused workspace.
+//
+// It is equivalent to running the command:
+//
+//	aerospace workspace-back-and-forth
+//
+// Unlike focus-back-and-forth, workspace-back-and-forth always succeeds.
+// Because unlike windows, workspaces can not be "closed".
+// Workspaces are name-addressable objects that are created and destroyed on the fly.
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	err := workspaceService.MoveBackAndForth()
+func (s *Service) MoveBackAndForth() error {
+	response, err := s.client.SendCommand("workspace-back-and-forth", []string{})
+	if err != nil {
+		return err
+	}
+
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to switch workspace back and forth: %s", response.StdErr)
 	}
 
 	return nil

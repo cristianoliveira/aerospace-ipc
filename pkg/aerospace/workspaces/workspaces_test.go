@@ -251,6 +251,33 @@ func TestWorkspaceService(t *testing.T) {
 				}
 			})
 		})
+
+		t.Run("MoveBackAndForth", func(tt *testing.T) {
+			tt.Run("successful switch", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"workspace-back-and-forth",
+						[]string{},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveBackAndForth()
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
 	})
 
 	t.Run("Error cases", func(tt *testing.T) {
@@ -351,6 +378,56 @@ func TestWorkspaceService(t *testing.T) {
 			}
 			if err.Error() != "failed to move window to workspace: window not found" {
 				t.Fatalf("expected specific error message, got: %v", err)
+			}
+		})
+
+		t.Run("MoveBackAndForth non-zero exit code", func(tt *testing.T) {
+			ctrl := gomock.NewController(tt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand(
+					"workspace-back-and-forth",
+					[]string{},
+				).
+				Return(
+					&client.Response{
+						ExitCode: 1,
+						StdErr:   "connection error",
+					},
+					nil,
+				)
+
+			err := service.MoveBackAndForth()
+			if err == nil {
+				t.Fatal("expected error for non-zero exit code, got nil")
+			}
+			if err.Error() != "failed to switch workspace back and forth: connection error" {
+				t.Fatalf("expected specific error message, got: %v", err)
+			}
+		})
+
+		t.Run("MoveBackAndForth connection error", func(tt *testing.T) {
+			ctrl := gomock.NewController(tt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand(
+					"workspace-back-and-forth",
+					[]string{},
+				).
+				Return(nil, fmt.Errorf("connection failed")).
+				Times(1)
+
+			err := service.MoveBackAndForth()
+			if err == nil {
+				t.Fatal("expected error, got nil")
 			}
 		})
 	})
