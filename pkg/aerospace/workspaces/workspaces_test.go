@@ -278,6 +278,265 @@ func TestWorkspaceService(t *testing.T) {
 				}
 			})
 		})
+
+		t.Run("MoveWorkspaceToMonitor", func(tt *testing.T) {
+			tt.Run("direction mode - left", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-workspace-to-monitor",
+						[]string{"left"},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Direction: "left",
+				}, MoveWorkspaceToMonitorOpts{})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("direction mode - all directions", func(ttt *testing.T) {
+				directions := []string{"left", "down", "up", "right"}
+				for _, dir := range directions {
+					ttt.Run(dir, func(tttt *testing.T) {
+						ctrl := gomock.NewController(tttt)
+						defer ctrl.Finish()
+
+						mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+						service := NewService(mockConn)
+
+						mockConn.EXPECT().
+							SendCommand(
+								"move-workspace-to-monitor",
+								[]string{dir},
+							).
+							Return(
+								&client.Response{
+									StdOut: "",
+								},
+								nil,
+							)
+
+						err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+							Direction: dir,
+						}, MoveWorkspaceToMonitorOpts{})
+						if err != nil {
+							tttt.Fatalf("unexpected error: %v", err)
+						}
+					})
+				}
+			})
+
+			tt.Run("order mode - next", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-workspace-to-monitor",
+						[]string{"next"},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Order: "next",
+				}, MoveWorkspaceToMonitorOpts{})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("order mode - prev", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-workspace-to-monitor",
+						[]string{"prev"},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Order: "prev",
+				}, MoveWorkspaceToMonitorOpts{})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("pattern mode - single pattern", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-workspace-to-monitor",
+						[]string{"HDMI-1"},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Patterns: []string{"HDMI-1"},
+				}, MoveWorkspaceToMonitorOpts{})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("pattern mode - multiple patterns", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-workspace-to-monitor",
+						[]string{"HDMI-1", "DP-1"},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Patterns: []string{"HDMI-1", "DP-1"},
+				}, MoveWorkspaceToMonitorOpts{})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("with workspace option", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				workspace := "my-workspace"
+				mockConn.EXPECT().
+					SendCommand(
+						"move-workspace-to-monitor",
+						[]string{"--workspace", "my-workspace", "left"},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Direction: "left",
+				}, MoveWorkspaceToMonitorOpts{
+					Workspace: &workspace,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("with wrap-around option", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-workspace-to-monitor",
+						[]string{"--wrap-around", "next"},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Order: "next",
+				}, MoveWorkspaceToMonitorOpts{
+					WrapAround: true,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("with all options", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				workspace := "my-workspace"
+				mockConn.EXPECT().
+					SendCommand(
+						"move-workspace-to-monitor",
+						[]string{"--workspace", "my-workspace", "--wrap-around", "right"},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Direction: "right",
+				}, MoveWorkspaceToMonitorOpts{
+					Workspace:  &workspace,
+					WrapAround: true,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+		})
 	})
 
 	t.Run("Error cases", func(tt *testing.T) {
@@ -426,6 +685,133 @@ func TestWorkspaceService(t *testing.T) {
 				Times(1)
 
 			err := service.MoveBackAndForth()
+			if err == nil {
+				t.Fatal("expected error, got nil")
+			}
+		})
+
+		t.Run("MoveWorkspaceToMonitor validation errors", func(tt *testing.T) {
+			tt.Run("no mode specified", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{}, MoveWorkspaceToMonitorOpts{})
+				if err == nil {
+					ttt.Fatal("expected error for no mode specified, got nil")
+				}
+				if err.Error() != "must specify exactly one of: Direction, Order, or Patterns" {
+					ttt.Fatalf("expected specific error message, got: %v", err)
+				}
+			})
+
+			tt.Run("multiple modes specified", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Direction: "left",
+					Order:     "next",
+				}, MoveWorkspaceToMonitorOpts{})
+				if err == nil {
+					ttt.Fatal("expected error for multiple modes, got nil")
+				}
+				if err.Error() != "cannot specify multiple modes; must specify exactly one of: Direction, Order, or Patterns" {
+					ttt.Fatalf("expected specific error message, got: %v", err)
+				}
+			})
+
+			tt.Run("invalid direction", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Direction: "invalid",
+				}, MoveWorkspaceToMonitorOpts{})
+				if err == nil {
+					ttt.Fatal("expected error for invalid direction, got nil")
+				}
+				if err.Error() != "invalid direction \"invalid\", must be one of: left, down, up, right" {
+					ttt.Fatalf("expected specific error message, got: %v", err)
+				}
+			})
+
+			tt.Run("invalid order", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+					Order: "invalid",
+				}, MoveWorkspaceToMonitorOpts{})
+				if err == nil {
+					ttt.Fatal("expected error for invalid order, got nil")
+				}
+				if err.Error() != "invalid order \"invalid\", must be one of: next, prev" {
+					ttt.Fatalf("expected specific error message, got: %v", err)
+				}
+			})
+		})
+
+		t.Run("MoveWorkspaceToMonitor non-zero exit code", func(tt *testing.T) {
+			ctrl := gomock.NewController(tt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand(
+					"move-workspace-to-monitor",
+					[]string{"left"},
+				).
+				Return(
+					&client.Response{
+						ExitCode: 1,
+						StdErr:   "workspace has monitor force assignment",
+					},
+					nil,
+				)
+
+			err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+				Direction: "left",
+			}, MoveWorkspaceToMonitorOpts{})
+			if err == nil {
+				t.Fatal("expected error for non-zero exit code, got nil")
+			}
+			if err.Error() != "failed to move workspace to monitor: workspace has monitor force assignment" {
+				t.Fatalf("expected specific error message, got: %v", err)
+			}
+		})
+
+		t.Run("MoveWorkspaceToMonitor connection error", func(tt *testing.T) {
+			ctrl := gomock.NewController(tt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand(
+					"move-workspace-to-monitor",
+					[]string{"left"},
+				).
+				Return(nil, fmt.Errorf("connection failed")).
+				Times(1)
+
+			err := service.MoveWorkspaceToMonitor(MoveWorkspaceToMonitorArgs{
+				Direction: "left",
+			}, MoveWorkspaceToMonitorOpts{})
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}

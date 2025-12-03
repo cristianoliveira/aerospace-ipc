@@ -245,3 +245,110 @@ func (s *Service) MoveBackAndForth() error {
 
 	return nil
 }
+
+// MoveWorkspaceToMonitor moves a workspace to a monitor.
+//
+// Supports three modes:
+//  1. Direction-based: Move workspace to monitor in direction relative to the focused monitor (left|down|up|right)
+//  2. Order-based: Move workspace to next or previous monitor (next|prev)
+//  3. Pattern-based: Move workspace to monitor matching pattern(s)
+//
+// Exactly one of args.Direction, args.Order, or args.Patterns must be specified.
+//
+// It is equivalent to running the command:
+//
+//	aerospace move-workspace-to-monitor [--workspace <workspace>] [--wrap-around] (left|down|up|right)
+//	aerospace move-workspace-to-monitor [--workspace <workspace>] [--wrap-around] (next|prev)
+//	aerospace move-workspace-to-monitor [--workspace <workspace>] <monitor-pattern>...
+//
+// Focus follows the focused workspace, so the workspace stays focused.
+// The command fails for workspaces that have monitor force assignment.
+//
+// Returns an error if the operation fails.
+//
+// Usage:
+//
+//	// Move focused workspace to monitor on the left
+//	err := workspaceService.MoveWorkspaceToMonitor(workspaces.MoveWorkspaceToMonitorArgs{
+//	    Direction: "left",
+//	}, workspaces.MoveWorkspaceToMonitorOpts{})
+//
+//	// Move specific workspace to next monitor with wrap around
+//	workspace := "my-workspace"
+//	err := workspaceService.MoveWorkspaceToMonitor(workspaces.MoveWorkspaceToMonitorArgs{
+//	    Order: "next",
+//	}, workspaces.MoveWorkspaceToMonitorOpts{
+//	    Workspace:  &workspace,
+//	    WrapAround: true,
+//	})
+//
+//	// Move workspace to monitor matching pattern
+//	err := workspaceService.MoveWorkspaceToMonitor(workspaces.MoveWorkspaceToMonitorArgs{
+//	    Patterns: []string{"HDMI-1", "DP-1"},
+//	}, workspaces.MoveWorkspaceToMonitorOpts{})
+func (s *Service) MoveWorkspaceToMonitor(args MoveWorkspaceToMonitorArgs, opts MoveWorkspaceToMonitorOpts) error {
+	// Validate that exactly one mode is specified
+	modesSet := 0
+	if args.Direction != "" {
+		modesSet++
+	}
+	if args.Order != "" {
+		modesSet++
+	}
+	if len(args.Patterns) > 0 {
+		modesSet++
+	}
+
+	if modesSet == 0 {
+		return fmt.Errorf("must specify exactly one of: Direction, Order, or Patterns")
+	}
+	if modesSet > 1 {
+		return fmt.Errorf("cannot specify multiple modes; must specify exactly one of: Direction, Order, or Patterns")
+	}
+
+	// Validate direction if specified
+	if args.Direction != "" {
+		validDirections := map[string]bool{"left": true, "down": true, "up": true, "right": true}
+		if !validDirections[args.Direction] {
+			return fmt.Errorf("invalid direction %q, must be one of: left, down, up, right", args.Direction)
+		}
+	}
+
+	// Validate order if specified
+	if args.Order != "" {
+		if args.Order != "next" && args.Order != "prev" {
+			return fmt.Errorf("invalid order %q, must be one of: next, prev", args.Order)
+		}
+	}
+
+	// Build command arguments
+	cmdArgs := []string{}
+
+	// Add optional flags
+	if opts.Workspace != nil {
+		cmdArgs = append(cmdArgs, "--workspace", *opts.Workspace)
+	}
+	if opts.WrapAround {
+		cmdArgs = append(cmdArgs, "--wrap-around")
+	}
+
+	// Add the mode-specific argument(s)
+	if args.Direction != "" {
+		cmdArgs = append(cmdArgs, args.Direction)
+	} else if args.Order != "" {
+		cmdArgs = append(cmdArgs, args.Order)
+	} else if len(args.Patterns) > 0 {
+		cmdArgs = append(cmdArgs, args.Patterns...)
+	}
+
+	response, err := s.client.SendCommand("move-workspace-to-monitor", cmdArgs)
+	if err != nil {
+		return err
+	}
+
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to move workspace to monitor: %s", response.StdErr)
+	}
+
+	return nil
+}
