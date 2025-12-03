@@ -177,6 +177,11 @@ func (s *Service) MoveWindowToWorkspace(args MoveWindowToWorkspaceArgs) error {
 //	    WrapAround: true,
 //	})
 func (s *Service) MoveWindowToWorkspaceWithOpts(args MoveWindowToWorkspaceArgs, opts MoveWindowToWorkspaceOpts) error {
+	// Validate incompatible options
+	if opts.Stdin && opts.NoStdin {
+		return fmt.Errorf("cannot specify both --stdin and --no-stdin options")
+	}
+
 	cmdArgs := []string{args.WorkspaceName}
 
 	if opts.WindowID != nil {

@@ -186,6 +186,70 @@ func TestWorkspaceService(t *testing.T) {
 					ttt.Fatalf("unexpected error: %v", err)
 				}
 			})
+
+			tt.Run("with no-stdin option", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-node-to-workspace",
+						[]string{
+							"42",
+							"--no-stdin",
+						},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWindowToWorkspaceWithOpts(MoveWindowToWorkspaceArgs{
+					WorkspaceName: "42",
+				}, MoveWindowToWorkspaceOpts{
+					NoStdin: true,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
+
+			tt.Run("with prev workspace", func(ttt *testing.T) {
+				ctrl := gomock.NewController(ttt)
+				defer ctrl.Finish()
+
+				mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+				service := NewService(mockConn)
+
+				mockConn.EXPECT().
+					SendCommand(
+						"move-node-to-workspace",
+						[]string{
+							"prev",
+							"--wrap-around",
+						},
+					).
+					Return(
+						&client.Response{
+							StdOut: "",
+						},
+						nil,
+					)
+
+				err := service.MoveWindowToWorkspaceWithOpts(MoveWindowToWorkspaceArgs{
+					WorkspaceName: "prev",
+				}, MoveWindowToWorkspaceOpts{
+					WrapAround: true,
+				})
+				if err != nil {
+					ttt.Fatalf("unexpected error: %v", err)
+				}
+			})
 		})
 	})
 
@@ -235,6 +299,58 @@ func TestWorkspaceService(t *testing.T) {
 			_, err := service.GetFocusedWorkspace()
 			if err == nil {
 				t.Fatal("expected error, got nil")
+			}
+		})
+
+		t.Run("MoveWindowToWorkspaceWithOpts incompatible options", func(tt *testing.T) {
+			ctrl := gomock.NewController(tt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			err := service.MoveWindowToWorkspaceWithOpts(MoveWindowToWorkspaceArgs{
+				WorkspaceName: "42",
+			}, MoveWindowToWorkspaceOpts{
+				Stdin:   true,
+				NoStdin: true,
+			})
+			if err == nil {
+				t.Fatal("expected error for incompatible options, got nil")
+			}
+			if err.Error() != "cannot specify both --stdin and --no-stdin options" {
+				t.Fatalf("expected specific error message, got: %v", err)
+			}
+		})
+
+		t.Run("MoveWindowToWorkspaceWithOpts non-zero exit code", func(tt *testing.T) {
+			ctrl := gomock.NewController(tt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand(
+					"move-node-to-workspace",
+					[]string{"42"},
+				).
+				Return(
+					&client.Response{
+						ExitCode: 1,
+						StdErr:   "window not found",
+					},
+					nil,
+				)
+
+			err := service.MoveWindowToWorkspaceWithOpts(MoveWindowToWorkspaceArgs{
+				WorkspaceName: "42",
+			}, MoveWindowToWorkspaceOpts{})
+			if err == nil {
+				t.Fatal("expected error for non-zero exit code, got nil")
+			}
+			if err.Error() != "failed to move window to workspace: window not found" {
+				t.Fatalf("expected specific error message, got: %v", err)
 			}
 		})
 	})
