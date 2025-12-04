@@ -10,6 +10,12 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+// TestWorkspacesServiceInterface ensures that Service implements WorkspacesService interface.
+// This is a compile-time check - if Service doesn't implement all methods, this will fail to compile.
+func TestWorkspacesServiceInterface(t *testing.T) {
+	var _ WorkspacesService = (*Service)(nil)
+}
+
 func TestWorkspaceService(t *testing.T) {
 	t.Run("Happy path", func(tt *testing.T) {
 		t.Run("GetFocusedWorkspace", func(tt *testing.T) {
@@ -588,6 +594,30 @@ func TestWorkspaceService(t *testing.T) {
 			}
 		})
 
+		t.Run("GetFocusedWorkspace JSON unmarshal error", func(tt *testing.T) {
+			ctrl := gomock.NewController(tt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand(
+					"list-workspaces",
+					[]string{
+						"--focused",
+						"--json",
+					},
+				).
+				Return(&client.Response{StdOut: "invalid json"}, nil).
+				Times(1)
+
+			_, err := service.GetFocusedWorkspace()
+			if err == nil {
+				t.Fatal("expected error for invalid JSON, got nil")
+			}
+		})
+
 		t.Run("MoveWindowToWorkspaceWithOpts incompatible options", func(tt *testing.T) {
 			ctrl := gomock.NewController(tt)
 			defer ctrl.Finish()
@@ -606,6 +636,29 @@ func TestWorkspaceService(t *testing.T) {
 			}
 			if err.Error() != "cannot specify both --stdin and --no-stdin options" {
 				t.Fatalf("expected specific error message, got: %v", err)
+			}
+		})
+
+		t.Run("MoveWindowToWorkspaceWithOpts connection error", func(tt *testing.T) {
+			ctrl := gomock.NewController(tt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand(
+					"move-node-to-workspace",
+					[]string{"42"},
+				).
+				Return(nil, fmt.Errorf("connection failed")).
+				Times(1)
+
+			err := service.MoveWindowToWorkspaceWithOpts(MoveWindowToWorkspaceArgs{
+				WorkspaceName: "42",
+			}, MoveWindowToWorkspaceOpts{})
+			if err == nil {
+				t.Fatal("expected error, got nil")
 			}
 		})
 
