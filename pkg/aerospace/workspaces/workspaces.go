@@ -65,6 +65,32 @@ type MoveWindowToWorkspaceOpts struct {
 	NoStdin bool
 }
 
+// MoveWorkspaceToMonitorArgs contains arguments for MoveWorkspaceToMonitor.
+// Exactly one of Direction, Order, or Patterns must be specified.
+type MoveWorkspaceToMonitorArgs struct {
+	// Direction specifies the direction to move the workspace (left|down|up|right).
+	// Move workspace to monitor in direction relative to the focused monitor.
+	Direction string
+
+	// Order specifies the order-based movement (next|prev).
+	// Move the workspace to next or prev monitor relative to the monitor the workspace currently belongs to.
+	Order string
+
+	// Patterns specifies one or more monitor patterns to match.
+	// Finds the first matching monitor and moves the workspace there.
+	// Multiple monitor patterns are useful for different monitor configurations.
+	Patterns []string
+}
+
+// MoveWorkspaceToMonitorOpts contains optional parameters for MoveWorkspaceToMonitor.
+type MoveWorkspaceToMonitorOpts struct {
+	// Workspace specifies which workspace to move. If not set, the focused workspace is moved.
+	Workspace *string
+
+	// WrapAround allows moving workspace between first and last monitors.
+	WrapAround bool
+}
+
 // WorkspacesService defines the interface for workspace operations in AeroSpaceWM.
 type WorkspacesService interface {
 	// GetFocusedWorkspace returns the currently focused workspace.
@@ -79,6 +105,10 @@ type WorkspacesService interface {
 
 	// MoveBackAndForth switches between the focused workspace and previously focused workspace.
 	MoveBackAndForth() error
+
+	// MoveWorkspaceToMonitor moves a workspace to a monitor.
+	// Supports three modes: direction-based (left|down|up|right), order-based (next|prev), or pattern-based.
+	MoveWorkspaceToMonitor(args MoveWorkspaceToMonitorArgs, opts MoveWorkspaceToMonitorOpts) error
 }
 
 // NewService creates a new workspace service with the given AeroSpace client connection.
