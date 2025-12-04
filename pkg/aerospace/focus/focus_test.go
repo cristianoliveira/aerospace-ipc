@@ -198,6 +198,31 @@ func TestFocusService(t *testing.T) {
 			}
 		})
 
+		t.Run("FocusBackAndForth", func(ttt *testing.T) {
+			ctrl := gomock.NewController(ttt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand("focus-back-and-forth", []string{}).
+				Return(
+					&client.Response{
+						ServerVersion: "1.0",
+						StdOut:        "",
+						StdErr:        "",
+						ExitCode:      0,
+					},
+					nil,
+				)
+
+			err := service.FocusBackAndForth()
+			if err != nil {
+				ttt.Fatalf("unexpected error: %v", err)
+			}
+		})
+
 		t.Run("SetFocusByDirection - all directions", func(ttt *testing.T) {
 			ctrl := gomock.NewController(ttt)
 			defer ctrl.Finish()
@@ -336,7 +361,59 @@ func TestFocusService(t *testing.T) {
 				ttt.Errorf("unexpected error message: %v", err)
 			}
 		})
+
+		t.Run("FocusBackAndForth non-zero exit code", func(ttt *testing.T) {
+			ctrl := gomock.NewController(ttt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand("focus-back-and-forth", []string{}).
+				Return(
+					&client.Response{
+						ServerVersion: "1.0",
+						StdOut:        "",
+						StdErr:        "no previous window",
+						ExitCode:      1,
+					},
+					nil,
+				)
+
+			err := service.FocusBackAndForth()
+			if err == nil {
+				ttt.Fatal("expected error for non-zero exit code, got nil")
+			}
+			if err.Error() != "failed to switch focus back and forth: no previous window" {
+				ttt.Errorf("unexpected error message: %v", err)
+			}
+		})
+
+		t.Run("FocusBackAndForth connection error", func(ttt *testing.T) {
+			ctrl := gomock.NewController(ttt)
+			defer ctrl.Finish()
+
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand("focus-back-and-forth", []string{}).
+				Return(nil, fmt.Errorf("connection failed")).
+				Times(1)
+
+			err := service.FocusBackAndForth()
+			if err == nil {
+				ttt.Fatal("expected error, got nil")
+			}
+		})
 	})
+}
+
+// TestFocusServiceInterface ensures that Service implements FocusService interface.
+// This is a compile-time check - if Service doesn't implement all methods, this will fail to compile.
+func TestFocusServiceInterface(t *testing.T) {
+	var _ FocusService = (*Service)(nil)
 }
 
 func TestHelperFunctions(t *testing.T) {

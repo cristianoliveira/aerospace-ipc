@@ -41,6 +41,9 @@ type FocusService interface {
 
 	// SetFocusByDFSIndex sets focus to a window by its DFS index.
 	SetFocusByDFSIndex(dfsIndex int) error
+
+	// FocusBackAndForth switches between the current and previously focused window.
+	FocusBackAndForth() error
 }
 
 // NewService creates a new focus service with the given AeroSpace client connection.
@@ -230,6 +233,44 @@ func (s *Service) SetFocusByDFSIndex(dfsIndex int) error {
 
 	if response.ExitCode != 0 {
 		return fmt.Errorf("failed to focus window with DFS index %d\n%s", dfsIndex, response.StdErr)
+	}
+
+	return nil
+}
+
+// FocusBackAndForth switches between the current and previously focused window.
+//
+// It is equivalent to running the command:
+//
+//	aerospace focus-back-and-forth
+//
+// The element is either a window or an empty workspace.
+// AeroSpace stores only one previously focused window in history,
+// which means that if you close the previous window,
+// focus-back-and-forth has no window to switch focus to.
+// In that case, the command will exit with non-zero exit code.
+//
+// That's why it may be preferred to combine focus-back-and-forth with workspace-back-and-forth:
+//
+//	err := focusService.FocusBackAndForth()
+//	if err != nil {
+//	    // Fallback to workspace-back-and-forth if window was closed
+//	    workspaceService.MoveBackAndForth()
+//	}
+//
+// Returns an error if the operation fails (e.g., if the previous window was closed).
+//
+// Usage:
+//
+//	err := focusService.FocusBackAndForth()
+func (s *Service) FocusBackAndForth() error {
+	response, err := s.client.SendCommand("focus-back-and-forth", []string{})
+	if err != nil {
+		return err
+	}
+
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to switch focus back and forth: %s", response.StdErr)
 	}
 
 	return nil
