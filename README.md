@@ -25,6 +25,8 @@ As of now, this library only covers the functionality necessary for implementing
     - Workspaces Service (`client.Workspaces()`)
         - Get focused workspace
         - Move window to workspace
+        - Move workspace back and forth (switch between focused and previous workspace)
+        - Move workspace to monitor (direction-based, order-based, or pattern-based)
 
     - Focus Service (`client.Focus()`)
         - Set focus by window ID
@@ -69,6 +71,7 @@ import (
     "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace"
     "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
     "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/layout"
+    "github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/workspaces"
 )
 
 func main() {
@@ -104,6 +107,48 @@ func main() {
         log.Fatalf("Failed to get focused workspace: %v", err)
     }
     fmt.Printf("Focused workspace: %s\n", workspace.Workspace)
+
+    // Move window to workspace
+    err = client.Workspaces().MoveWindowToWorkspace(workspaces.MoveWindowToWorkspaceArgs{
+        WorkspaceName: "my-workspace",
+    })
+    if err != nil {
+        log.Fatalf("Failed to move window: %v", err)
+    }
+
+    // Switch between focused and previous workspace
+    err = client.Workspaces().MoveBackAndForth()
+    if err != nil {
+        log.Fatalf("Failed to switch workspace: %v", err)
+    }
+
+    // Move workspace to monitor (direction-based)
+    err = client.Workspaces().MoveWorkspaceToMonitor(workspaces.MoveWorkspaceToMonitorArgs{
+        Direction: "left",
+    }, workspaces.MoveWorkspaceToMonitorOpts{})
+    if err != nil {
+        log.Fatalf("Failed to move workspace to monitor: %v", err)
+    }
+
+    // Move workspace to monitor (order-based with wrap-around)
+    workspaceName := "my-workspace"
+    err = client.Workspaces().MoveWorkspaceToMonitor(workspaces.MoveWorkspaceToMonitorArgs{
+        Order: "next",
+    }, workspaces.MoveWorkspaceToMonitorOpts{
+        Workspace:  &workspaceName,
+        WrapAround: true,
+    })
+    if err != nil {
+        log.Fatalf("Failed to move workspace to monitor: %v", err)
+    }
+
+    // Move workspace to monitor (pattern-based)
+    err = client.Workspaces().MoveWorkspaceToMonitor(workspaces.MoveWorkspaceToMonitorArgs{
+        Patterns: []string{"HDMI-1", "DP-1"},
+    }, workspaces.MoveWorkspaceToMonitorOpts{})
+    if err != nil {
+        log.Fatalf("Failed to move workspace to monitor: %v", err)
+    }
 
     // Use the Focus service to set focus
     err = client.Focus().SetFocusByWindowID(12345, focus.SetFocusOpts{
