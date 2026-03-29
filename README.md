@@ -14,8 +14,8 @@ It uses the available Unix Socket to communicate. The socket is typically locate
 
 ## Features
 
-As of now, this library only covers the functionality necessary for implementing
-[aerospace-marks](https://github.com/cristianoliveira/aerospace-marks) and [aerospace-scratchpad](https://github.com/cristianoliveira/aerospace-scratchpad) which is:
+This library expose wrapper methods to interact with aerospace, It covers the functionality necessary for implementing
+[aerospace-marks](https://github.com/cristianoliveira/aerospace-marks) and [aerospace-scratchpad](https://github.com/cristianoliveira/aerospace-scratchpad) (see below). For custom communications see the [custom](#custom-communication)
 
     - Windows Service (`client.Windows()`)
         - Get all windows
@@ -38,6 +38,7 @@ As of now, this library only covers the functionality necessary for implementing
         - Set window layout
         - Toggle between layouts
 
+### Custom communication
 For the remaining functionality, this library exposes [an AeroSpaceConnection interface](https://github.com/cristianoliveira/aerospace-ipc/blob/main/pkg/client/socket.go#L40), which allows you to send raw commands and receive responses in pure JSON format. Access it via `client.Connection()`.
 
 See [documentation](https://pkg.go.dev/github.com/cristianoliveira/aerospace-ipc) for the full list of available methods.
