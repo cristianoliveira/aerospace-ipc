@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +14,10 @@ import (
 	"github.com/cristianoliveira/aerospace-ipc/internal/constants"
 	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 )
+
+// socketProtocolVersion must match SOCKET_PROTOCOL_VERSION in AeroSpace's clientServer.swift.
+// AeroSpace added this handshake in commit 8413641c (2026-06-21).
+const socketProtocolVersion uint32 = 1
 
 // Command represents the JSON structure for AeroSpace socket commands.
 // This wlll mostly mirror https://github.com/nikitabobko/AeroSpace/blob/main/Sources/Common/model/clientServer.swift#L76
@@ -211,29 +216,22 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 		return nil, fmt.Errorf("failed to marshal command\n%w", err)
 	}
 
-	_, err = c.Conn.Write(cmdBytes)
-	if err != nil {
+	// AeroSpace expects [4-byte little-endian length][JSON payload]
+	if err := binary.Write(c.Conn, binary.LittleEndian, uint32(len(cmdBytes))); err != nil {
+		return nil, fmt.Errorf("failed to send command length\n%w", err)
+	}
+	if _, err = c.Conn.Write(cmdBytes); err != nil {
 		return nil, fmt.Errorf("failed to send command\n%w", err)
 	}
 
-	var responseData []byte
-	buf := make([]byte, 4096)
-	for {
-		n, err := c.Conn.Read(buf)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, fmt.Errorf(
-				"failed to read response\n%w\ndata\n%s",
-				err,
-				responseData,
-			)
-		}
-		responseData = append(responseData, buf[:n]...)
-		if n < len(buf) {
-			break
-		}
+	// Response is also length-prefixed
+	var responseLen uint32
+	if err := binary.Read(c.Conn, binary.LittleEndian, &responseLen); err != nil {
+		return nil, fmt.Errorf("failed to read response length\n%w", err)
+	}
+	responseData := make([]byte, responseLen)
+	if _, err := io.ReadFull(c.Conn, responseData); err != nil {
+		return nil, fmt.Errorf("failed to read response\n%w", err)
 	}
 
 	var response Response
@@ -258,7 +256,7 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 }
 
 // NewAeroSpaceSocketConnection creates a new AeroSpaceSocketConnection.
-// It initializes the connection to the AeroSpace socket.
+// It initializes the connection to the AeroSpace socket and performs the protocol version handshake.
 func NewAeroSpaceSocketConnection(socketPath string) (*AeroSpaceSocketConnection, error) {
 	if socketPath == "" {
 		return nil, fmt.Errorf("socket path cannot be empty")
@@ -267,6 +265,25 @@ func NewAeroSpaceSocketConnection(socketPath string) (*AeroSpaceSocketConnection
 	conn, err := net.Dial("unix", socketPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to socket\n %w", err)
+	}
+
+	// AeroSpace requires a protocol version handshake on connect (added in commit 8413641c).
+	// Client sends its version; server responds with its own; both must match.
+	if err := binary.Write(conn, binary.LittleEndian, socketProtocolVersion); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to send protocol version\n%w", err)
+	}
+	var serverVersion uint32
+	if err := binary.Read(conn, binary.LittleEndian, &serverVersion); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to read server protocol version\n%w", err)
+	}
+	if serverVersion != socketProtocolVersion {
+		conn.Close()
+		return nil, fmt.Errorf(
+			"socket protocol version mismatch: client=%d server=%d (try restarting AeroSpace)",
+			socketProtocolVersion, serverVersion,
+		)
 	}
 
 	client := &AeroSpaceSocketConnection{
