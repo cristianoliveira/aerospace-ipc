@@ -132,7 +132,7 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion() error {
 	parts := strings.Split(serverVersion, "-")
 	versionParts := strings.Split(parts[0], ".")
 	if len(versionParts) < 2 {
-		fmt.Printf("[WARN] Invalid server version format: %s\n", serverVersion)
+		return fmt.Errorf("invalid server version format: %s", serverVersion)
 	}
 
 	intMajor, err := strconv.Atoi(versionParts[0])
@@ -216,11 +216,11 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 		return nil, fmt.Errorf("failed to marshal command\n%w", err)
 	}
 
-	// AeroSpace expects [4-byte little-endian length][JSON payload]
-	if err := binary.Write(c.Conn, binary.LittleEndian, uint32(len(cmdBytes))); err != nil {
-		return nil, fmt.Errorf("failed to send command length\n%w", err)
-	}
-	if _, err = c.Conn.Write(cmdBytes); err != nil {
+	// AeroSpace expects [4-byte little-endian length][JSON payload] as one atomic write
+	frame := make([]byte, 4, 4+len(cmdBytes))
+	binary.LittleEndian.PutUint32(frame, uint32(len(cmdBytes)))
+	frame = append(frame, cmdBytes...)
+	if _, err = c.Conn.Write(frame); err != nil {
 		return nil, fmt.Errorf("failed to send command\n%w", err)
 	}
 
@@ -228,6 +228,10 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 	var responseLen uint32
 	if err := binary.Read(c.Conn, binary.LittleEndian, &responseLen); err != nil {
 		return nil, fmt.Errorf("failed to read response length\n%w", err)
+	}
+	const maxResponseSize = 16 * 1024 * 1024 // 16 MiB
+	if responseLen > maxResponseSize {
+		return nil, fmt.Errorf("response length %d exceeds maximum %d", responseLen, maxResponseSize)
 	}
 	responseData := make([]byte, responseLen)
 	if _, err := io.ReadFull(c.Conn, responseData); err != nil {
