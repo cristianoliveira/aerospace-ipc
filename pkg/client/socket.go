@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -22,12 +23,10 @@ const socketProtocolVersion uint32 = 1
 // Command represents the JSON structure for AeroSpace socket commands.
 // This wlll mostly mirror https://github.com/nikitabobko/AeroSpace/blob/main/Sources/Common/model/clientServer.swift#L76
 type Command struct {
-	Command string   `json:"command"`
-	Args    []string `json:"args"`
-	Stdin   string   `json:"stdin"`
-	// For Version: 0.20.0 and above
-	// Pass null if not available
-	WindowID  *uint64 `json:"windowId"`
+	Args  []string `json:"args"`
+	Stdin string   `json:"stdin"`
+	// Pass null if callback context is unavailable.
+	WindowID  *uint32 `json:"windowId"`
 	Workspace *string `json:"workspace"`
 }
 
@@ -147,7 +146,7 @@ func (c *AeroSpaceSocketConnection) CheckServerVersion() error {
 
 	// Since AeroSpace may have breaking changes even in minor versions,
 	// I'll enforce exact match on major and minor versions
-	// Last breaking change was on from 0.19.x to 0.20.0
+	// Socket protocol version 1 requires AeroSpace 0.21.0 or newer.
 	if intMajor != c.MinMajorVersion ||
 		intMajor == c.MinMajorVersion && intMinor != c.MinMinorVersion {
 		versionJoined := strings.Join(versionParts, ".")
@@ -185,24 +184,24 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 	if c.Conn == nil {
 		return nil, fmt.Errorf("connection is not established")
 	}
-
-	// Merge command and arguments into the Command struct
-	commandArgs := append([]string{command}, args...)
-	cmd := Command{
-		Command: "", // This field is deprecated and not used
-		Args:    commandArgs,
-		Stdin:   "",
+	if command == "subscribe" {
+		return nil, fmt.Errorf("subscribe is not supported by SendCommand; use a dedicated streaming connection")
 	}
 
-	// For Version: 0.20.0 and above, we can pass the window ID via env variable
-	// Pass env AEROSPACE_WINDOW_ID if available
+	commandArgs := append([]string{command}, args...)
+	cmd := Command{
+		Args:  commandArgs,
+		Stdin: "",
+	}
+
 	windowID, ok := os.LookupEnv("AEROSPACE_WINDOW_ID")
 	if ok {
-		parsedID, err := strconv.ParseUint(windowID, 10, 64)
+		parsedID, err := strconv.ParseUint(windowID, 10, 32)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse AEROSPACE_WINDOW_ID\n%w", err)
 		}
-		cmd.WindowID = &parsedID
+		windowID := uint32(parsedID)
+		cmd.WindowID = &windowID
 	}
 
 	// Pass env AEROSPACE_WORKSPACE if available
@@ -216,11 +215,11 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 		return nil, fmt.Errorf("failed to marshal command\n%w", err)
 	}
 
-	// AeroSpace expects [4-byte little-endian length][JSON payload] as one atomic write
+	// AeroSpace expects [4-byte little-endian length][JSON payload].
 	frame := make([]byte, 4, 4+len(cmdBytes))
 	binary.LittleEndian.PutUint32(frame, uint32(len(cmdBytes)))
 	frame = append(frame, cmdBytes...)
-	if _, err = c.Conn.Write(frame); err != nil {
+	if err = writeFull(c.Conn, frame); err != nil {
 		return nil, fmt.Errorf("failed to send command\n%w", err)
 	}
 
@@ -252,11 +251,28 @@ func (c *AeroSpaceSocketConnection) SendCommand(command string, args []string) (
 		return nil, fmt.Errorf("command failed with exit code %d\n%s", response.ExitCode, response.StdErr)
 	}
 
-	if response.StdErr != "" {
-		return nil, fmt.Errorf("command error\n%s", response.StdErr)
-	}
-
 	return &response, nil
+}
+
+func writeFull(writer io.Writer, data []byte) error {
+	for len(data) > 0 {
+		written, err := writer.Write(data)
+		if err != nil {
+			return err
+		}
+		if written <= 0 || written > len(data) {
+			return io.ErrShortWrite
+		}
+		data = data[written:]
+	}
+	return nil
+}
+
+func closeAfterConnectionError(conn net.Conn, connectionErr error) error {
+	if closeErr := conn.Close(); closeErr != nil {
+		return errors.Join(connectionErr, fmt.Errorf("failed to close connection: %w", closeErr))
+	}
+	return connectionErr
 }
 
 // NewAeroSpaceSocketConnection creates a new AeroSpaceSocketConnection.
@@ -274,20 +290,20 @@ func NewAeroSpaceSocketConnection(socketPath string) (*AeroSpaceSocketConnection
 	// AeroSpace requires a protocol version handshake on connect (added in commit 8413641c).
 	// Client sends its version; server responds with its own; both must match.
 	if err := binary.Write(conn, binary.LittleEndian, socketProtocolVersion); err != nil {
-		conn.Close()
-		return nil, fmt.Errorf("failed to send protocol version\n%w", err)
+		connectionErr := fmt.Errorf("failed to send protocol version\n%w", err)
+		return nil, closeAfterConnectionError(conn, connectionErr)
 	}
 	var serverVersion uint32
 	if err := binary.Read(conn, binary.LittleEndian, &serverVersion); err != nil {
-		conn.Close()
-		return nil, fmt.Errorf("failed to read server protocol version\n%w", err)
+		connectionErr := fmt.Errorf("failed to read server protocol version\n%w", err)
+		return nil, closeAfterConnectionError(conn, connectionErr)
 	}
 	if serverVersion != socketProtocolVersion {
-		conn.Close()
-		return nil, fmt.Errorf(
+		connectionErr := fmt.Errorf(
 			"socket protocol version mismatch: client=%d server=%d (try restarting AeroSpace)",
 			socketProtocolVersion, serverVersion,
 		)
+		return nil, closeAfterConnectionError(conn, connectionErr)
 	}
 
 	client := &AeroSpaceSocketConnection{

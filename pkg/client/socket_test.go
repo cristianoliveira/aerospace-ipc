@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"os"
 	"strings"
 	"testing"
 
@@ -31,23 +32,188 @@ func setupSendCommandMock(mockConn *net_mock.MockConn, responsePayload []byte) {
 	gomock.InOrder(
 		mockConn.EXPECT().
 			Write(gomock.Any()).
-			Return(0, nil),
-
-		mockConn.EXPECT().
-			Read(gomock.Any()).
 			DoAndReturn(func(p []byte) (int, error) {
-				prefix := framedResponse(responsePayload)[:4]
-				return copy(p, prefix), nil
-			}).
-			Times(1),
-
-		mockConn.EXPECT().
-			Read(gomock.Any()).
-			DoAndReturn(func(p []byte) (int, error) {
-				return copy(p, responsePayload), nil
-			}).
-			Times(1),
+				return len(p), nil
+			}),
+		setupResponseReads(mockConn, responsePayload),
 	)
+}
+
+func setupResponseReads(mockConn *net_mock.MockConn, responsePayload []byte) *gomock.Call {
+	mockConn.EXPECT().
+		Read(gomock.Any()).
+		DoAndReturn(func(p []byte) (int, error) {
+			prefix := framedResponse(responsePayload)[:4]
+			return copy(p, prefix), nil
+		}).
+		Times(1)
+
+	return mockConn.EXPECT().
+		Read(gomock.Any()).
+		DoAndReturn(func(p []byte) (int, error) {
+			return copy(p, responsePayload), nil
+		}).
+		Times(1)
+}
+
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	value, exists := os.LookupEnv(key)
+	if err := os.Unsetenv(key); err != nil {
+		t.Fatalf("failed to unset %s: %v", key, err)
+	}
+	t.Cleanup(func() {
+		if exists {
+			if err := os.Setenv(key, value); err != nil {
+				t.Errorf("failed to restore %s: %v", key, err)
+			}
+			return
+		}
+		if err := os.Unsetenv(key); err != nil {
+			t.Errorf("failed to clear %s: %v", key, err)
+		}
+	})
+}
+
+func TestSendCommand(t *testing.T) {
+	unsetEnv(t, "AEROSPACE_WINDOW_ID")
+	unsetEnv(t, "AEROSPACE_WORKSPACE")
+
+	t.Run("sends documented request schema", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockConn := net_mock.NewMockConn(ctrl)
+		responsePayload, err := json.Marshal(Response{StdOut: "1\n", ExitCode: 0})
+		if err != nil {
+			t.Fatalf("failed to marshal response: %v", err)
+		}
+		expectedRequest := []byte(`{"args":["list-workspaces","--focused"],"stdin":"","windowId":null,"workspace":null}`)
+
+		gomock.InOrder(
+			mockConn.EXPECT().Write(framedResponse(expectedRequest)).Return(len(framedResponse(expectedRequest)), nil),
+			setupResponseReads(mockConn, responsePayload),
+		)
+
+		connection := &AeroSpaceSocketConnection{Conn: mockConn}
+		response, err := connection.SendCommand("list-workspaces", []string{"--focused"})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if response.StdOut != "1\n" {
+			t.Fatalf("expected stdout %q, got %q", "1\n", response.StdOut)
+		}
+	})
+
+	t.Run("completes a partial frame write", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockConn := net_mock.NewMockConn(ctrl)
+		responsePayload, err := json.Marshal(Response{ExitCode: 0})
+		if err != nil {
+			t.Fatalf("failed to marshal response: %v", err)
+		}
+		requestPayload := []byte(`{"args":["list-workspaces","--focused"],"stdin":"","windowId":null,"workspace":null}`)
+		frame := framedResponse(requestPayload)
+
+		gomock.InOrder(
+			mockConn.EXPECT().Write(frame).Return(3, nil),
+			mockConn.EXPECT().Write(frame[3:]).Return(len(frame)-3, nil),
+			setupResponseReads(mockConn, responsePayload),
+		)
+
+		connection := &AeroSpaceSocketConnection{Conn: mockConn}
+		if _, err := connection.SendCommand("list-workspaces", []string{"--focused"}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("accepts stderr when exit code is zero", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockConn := net_mock.NewMockConn(ctrl)
+		responsePayload, err := json.Marshal(Response{StdErr: "warning", ExitCode: 0})
+		if err != nil {
+			t.Fatalf("failed to marshal response: %v", err)
+		}
+		setupSendCommandMock(mockConn, responsePayload)
+
+		connection := &AeroSpaceSocketConnection{Conn: mockConn}
+		response, err := connection.SendCommand("list-workspaces", []string{"--focused"})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if response.StdErr != "warning" {
+			t.Fatalf("expected stderr %q, got %q", "warning", response.StdErr)
+		}
+	})
+
+	t.Run("rejects subscribe mode", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		connection := &AeroSpaceSocketConnection{Conn: net_mock.NewMockConn(ctrl)}
+
+		_, err := connection.SendCommand("subscribe", []string{"--all"})
+		if err == nil || !containsSubstring(err.Error(), "subscribe is not supported") {
+			t.Fatalf("expected unsupported subscribe error, got %v", err)
+		}
+	})
+
+	t.Run("forwards uint32 window ID", func(t *testing.T) {
+		t.Setenv("AEROSPACE_WINDOW_ID", "4294967295")
+		ctrl := gomock.NewController(t)
+		mockConn := net_mock.NewMockConn(ctrl)
+		responsePayload, err := json.Marshal(Response{ExitCode: 0})
+		if err != nil {
+			t.Fatalf("failed to marshal response: %v", err)
+		}
+		expectedRequest := []byte(`{"args":["list-workspaces","--focused"],"stdin":"","windowId":4294967295,"workspace":null}`)
+		gomock.InOrder(
+			mockConn.EXPECT().Write(framedResponse(expectedRequest)).Return(len(framedResponse(expectedRequest)), nil),
+			setupResponseReads(mockConn, responsePayload),
+		)
+
+		connection := &AeroSpaceSocketConnection{Conn: mockConn}
+		if _, err := connection.SendCommand("list-workspaces", []string{"--focused"}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("rejects window ID larger than uint32", func(t *testing.T) {
+		t.Setenv("AEROSPACE_WINDOW_ID", "4294967296")
+		ctrl := gomock.NewController(t)
+		connection := &AeroSpaceSocketConnection{Conn: net_mock.NewMockConn(ctrl)}
+
+		_, err := connection.SendCommand("list-workspaces", []string{"--focused"})
+		if err == nil || !containsSubstring(err.Error(), "failed to parse AEROSPACE_WINDOW_ID") {
+			t.Fatalf("expected invalid window ID error, got %v", err)
+		}
+	})
+}
+
+func TestCloseAfterConnectionError(t *testing.T) {
+	primaryErr := errors.New("handshake failed")
+
+	t.Run("preserves connection error when close succeeds", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockConn := net_mock.NewMockConn(ctrl)
+		mockConn.EXPECT().Close().Return(nil)
+
+		err := closeAfterConnectionError(mockConn, primaryErr)
+		if !errors.Is(err, primaryErr) {
+			t.Fatalf("expected primary error, got %v", err)
+		}
+	})
+
+	t.Run("preserves connection and close errors", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockConn := net_mock.NewMockConn(ctrl)
+		closeErr := errors.New("close failed")
+		mockConn.EXPECT().Close().Return(closeErr)
+
+		err := closeAfterConnectionError(mockConn, primaryErr)
+		if !errors.Is(err, primaryErr) {
+			t.Fatalf("expected primary error, got %v", err)
+		}
+		if !errors.Is(err, closeErr) {
+			t.Fatalf("expected close error, got %v", err)
+		}
+	})
 }
 
 func TestSocketClient(t *testing.T) {
@@ -211,10 +377,10 @@ func TestCheckServerVersion(t *testing.T) {
 			expectedErrorMsg string
 		}{
 			{
-				name:            "GetServerVersion fails - connection not established",
-				minMajorVersion: 0,
-				minMinorVersion: 20,
-				setupMock:       func(ctrl *gomock.Controller, mockConn *net_mock.MockConn) {},
+				name:             "GetServerVersion fails - connection not established",
+				minMajorVersion:  0,
+				minMinorVersion:  20,
+				setupMock:        func(ctrl *gomock.Controller, mockConn *net_mock.MockConn) {},
 				expectedErrorMsg: "connection is not established",
 			},
 			{
