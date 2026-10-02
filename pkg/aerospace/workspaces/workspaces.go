@@ -302,6 +302,8 @@ func (s *Service) MoveBackAndForth() error {
 // replaces it there with a stub workspace. A workspace already visible on the focused monitor
 // is a no-op unless FailIfNoop is set.
 // Workspace names beginning with a dash are rejected by AeroSpace's command parser.
+// See AeroSpace v0.21.0 command docs:
+// https://github.com/nikitabobko/AeroSpace/blob/v0.21.0-Beta/docs/aerospace-summon-workspace.adoc
 //
 // Returns an error if the operation fails.
 func (s *Service) SummonWorkspace(args SummonWorkspaceArgs, opts SummonWorkspaceOpts) error {
