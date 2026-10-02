@@ -84,60 +84,65 @@ func TestSummonWorkspaceDashLeadingNameUsesUpstreamParserValidation(t *testing.T
 	mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 	service := NewService(mockConn)
 
+	wantErr := errors.New("command failed with exit code 2\nWorkspace names starting with dash are disallowed")
 	mockConn.EXPECT().
 		SendCommand("summon-workspace", []string{"--", "-work"}).
-		Return(&client.Response{ExitCode: 2, StdErr: "Workspace names starting with dash are disallowed"}, nil)
+		Return(nil, wantErr)
 
 	err := service.SummonWorkspace(SummonWorkspaceArgs{WorkspaceName: "-work"}, SummonWorkspaceOpts{})
-	if err == nil || err.Error() != "failed to summon workspace: Workspace names starting with dash are disallowed" {
-		t.Fatalf("expected upstream parser error, got %v", err)
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("expected upstream parser error %v, got %v", wantErr, err)
 	}
 }
 
-func TestSummonWorkspacePropagatesFailIfNoopAndMonitorAssignmentErrors(t *testing.T) {
+func TestSummonWorkspacePropagatesServerErrors(t *testing.T) {
 	for _, tt := range []struct {
-		name   string
-		stderr string
+		name      string
+		workspace string
+		options   SummonWorkspaceOpts
+		wantError string
 	}{
-		{name: "noop", stderr: "workspace is already visible"},
-		{name: "forced monitor assignment", stderr: "workspace-to-monitor-force-assignment doesn't allow it"},
+		{
+			name:      "unknown workspace",
+			workspace: "missing",
+			wantError: "command failed with exit code 1\nunknown workspace",
+		},
+		{
+			name:      "fail if noop",
+			workspace: "work",
+			options:   SummonWorkspaceOpts{FailIfNoop: true},
+			wantError: "command failed with exit code 1\nWorkspace is already visible",
+		},
+		{
+			name:      "forced monitor assignment",
+			workspace: "work",
+			wantError: "command failed with exit code 1\nworkspace-to-monitor-force-assignment doesn't allow it",
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
 			service := NewService(mockConn)
-
+			wantArgs := []string{"--", tt.workspace}
+			if tt.options.FailIfNoop {
+				wantArgs = []string{"--fail-if-noop", "--", tt.workspace}
+			}
 			mockConn.EXPECT().
-				SendCommand("summon-workspace", []string{"--fail-if-noop", "--", "work"}).
-				Return(&client.Response{ExitCode: 1, StdErr: tt.stderr}, nil)
+				SendCommand("summon-workspace", wantArgs).
+				Return(nil, errors.New(tt.wantError))
 
 			err := service.SummonWorkspace(
-				SummonWorkspaceArgs{WorkspaceName: "work"},
-				SummonWorkspaceOpts{FailIfNoop: true},
+				SummonWorkspaceArgs{WorkspaceName: tt.workspace},
+				tt.options,
 			)
-			if err == nil || err.Error() != "failed to summon workspace: "+tt.stderr {
-				t.Fatalf("expected server error to be propagated, got %v", err)
+			if err == nil || err.Error() != tt.wantError {
+				t.Fatalf("expected SendCommand error %q, got %v", tt.wantError, err)
 			}
 		})
 	}
 }
 
-func TestSummonWorkspaceReturnsCommandAndConnectionErrors(t *testing.T) {
-	t.Run("server error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
-		service := NewService(mockConn)
-
-		mockConn.EXPECT().
-			SendCommand("summon-workspace", []string{"--", "missing"}).
-			Return(&client.Response{ExitCode: 1, StdErr: "unknown workspace"}, nil)
-
-		err := service.SummonWorkspace(SummonWorkspaceArgs{WorkspaceName: "missing"}, SummonWorkspaceOpts{})
-		if err == nil || err.Error() != "failed to summon workspace: unknown workspace" {
-			t.Fatalf("expected server error, got %v", err)
-		}
-	})
-
+func TestSummonWorkspaceReturnsConnectionError(t *testing.T) {
 	t.Run("connection error", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
