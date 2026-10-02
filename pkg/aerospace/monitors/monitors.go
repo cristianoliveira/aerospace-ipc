@@ -37,7 +37,7 @@ func NewService(client client.AeroSpaceConnection) *Service {
 //
 // It is equivalent to running the command:
 //
-// \taerospace list-monitors --focused --json --format "%{monitor-id} %{monitor-name}"
+//	aerospace list-monitors --focused --json --format "%{monitor-id} %{monitor-name}"
 //
 // Returns an error if no monitor is focused, the command fails, or its output is malformed.
 func (s *Service) GetFocusedMonitor() (*Monitor, error) {
