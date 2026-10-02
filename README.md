@@ -34,6 +34,7 @@ This library expose wrapper methods to interact with aerospace, It covers the fu
         - Get focused monitor
 
     - Focus Service (`client.Focus()`)
+        - Focus monitor by AeroSpace ordinal
         - Set focus by window ID
         - Set focus by direction (left, down, up, right)
         - Set focus by DFS (dfs-next, dfs-prev)
@@ -187,6 +188,12 @@ func main() {
     })
     if err != nil {
         log.Fatalf("Failed to set focus: %v", err)
+    }
+
+    // Focus by the 1-based AeroSpace ordinal, not the macOS screen ID
+    err = client.Focus().FocusMonitorByOrdinal(2)
+    if err != nil {
+        log.Fatalf("Failed to focus monitor: %v", err)
     }
 
     // Use the Layout service to set layout

@@ -2,6 +2,7 @@ package focus
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
 )
@@ -30,6 +31,9 @@ type Service struct {
 
 // FocusService defines the interface for focus operations in AeroSpaceWM.
 type FocusService interface {
+	// FocusMonitorByOrdinal focuses a monitor by AeroSpace's 1-based monitor ordinal.
+	FocusMonitorByOrdinal(ordinal int) error
+
 	// SetFocusByWindowID sets focus to a window specified by its ID.
 	SetFocusByWindowID(windowID int, opts ...SetFocusOpts) error
 
@@ -49,6 +53,34 @@ type FocusService interface {
 // NewService creates a new focus service with the given AeroSpace client connection.
 func NewService(client client.AeroSpaceConnection) *Service {
 	return &Service{client: client}
+}
+
+// FocusMonitorByOrdinal focuses a monitor by AeroSpace's 1-based monitor ordinal.
+//
+// The ordinal corresponds to `%{monitor-id}` from `list-monitors`: its 1-based position
+// in AeroSpace's `sortedMonitors` list. It is not a macOS screen ID, and may change after
+// monitor reconfiguration. See AeroSpace v0.21.0 docs:
+// https://github.com/nikitabobko/AeroSpace/blob/v0.21.0-Beta/docs/aerospace-list-monitors.adoc
+// https://github.com/nikitabobko/AeroSpace/blob/v0.21.0-Beta/Sources/AppBundle/model/MonitorDescriptionEx.swift
+//
+// It is equivalent to running the command:
+//
+//	aerospace focus-monitor <ordinal>
+//
+// Returns an error if ordinal is less than 1 or the operation fails.
+func (s *Service) FocusMonitorByOrdinal(ordinal int) error {
+	if ordinal < 1 {
+		return fmt.Errorf("monitor ordinal must be at least 1, got %d", ordinal)
+	}
+
+	response, err := s.client.SendCommand("focus-monitor", []string{strconv.Itoa(ordinal)})
+	if err != nil {
+		return err
+	}
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to focus monitor with ordinal %d\n%s", ordinal, response.StdErr)
+	}
+	return nil
 }
 
 // SetFocusByWindowID sets focus to a window specified by its ID.
