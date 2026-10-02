@@ -27,6 +27,7 @@ This library expose wrapper methods to interact with aerospace, It covers the fu
         - Move window to workspace
         - Move workspace back and forth (switch between focused and previous workspace)
         - Move workspace to monitor (direction-based, order-based, or pattern-based)
+        - Summon a workspace to the focused monitor
 
     - Focus Service (`client.Focus()`)
         - Set focus by window ID
@@ -121,6 +122,16 @@ func main() {
     err = client.Workspaces().MoveBackAndForth()
     if err != nil {
         log.Fatalf("Failed to switch workspace: %v", err)
+    }
+
+    // Summon a workspace to the focused monitor
+    err = client.Workspaces().SummonWorkspace(workspaces.SummonWorkspaceArgs{
+        WorkspaceName: "my-workspace",
+    }, workspaces.SummonWorkspaceOpts{
+        FailIfNoop: true,
+    })
+    if err != nil {
+        log.Fatalf("Failed to summon workspace: %v", err)
     }
 
     // Move workspace to monitor (direction-based)
