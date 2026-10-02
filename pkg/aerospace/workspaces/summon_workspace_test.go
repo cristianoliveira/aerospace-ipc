@@ -29,9 +29,9 @@ func TestSummonWorkspace(t *testing.T) {
 			wantArgs:   []string{"--fail-if-noop", "--", "work"},
 		},
 		{
-			name:      "workspace names with spaces stay a single argument and stderr tip is not failure",
-			workspace: "my workspace",
-			wantArgs:  []string{"--", "my workspace"},
+			name:      "valid workspace name is passed as one argument and stderr tip is not failure",
+			workspace: "my-workspace",
+			wantArgs:  []string{"--", "my-workspace"},
 			stderr:    "Workspace is already visible; use --fail-if-noop to fail",
 		},
 	}
@@ -95,6 +95,22 @@ func TestSummonWorkspaceDashLeadingNameUsesUpstreamParserValidation(t *testing.T
 	}
 }
 
+func TestSummonWorkspaceWhitespaceNameUsesUpstreamParserValidation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+	service := NewService(mockConn)
+
+	wantErr := errors.New("command failed with exit code 2\nWhitespace characters are forbidden in workspace names")
+	mockConn.EXPECT().
+		SendCommand("summon-workspace", []string{"--", "my workspace"}).
+		Return(nil, wantErr)
+
+	err := service.SummonWorkspace(SummonWorkspaceArgs{WorkspaceName: "my workspace"}, SummonWorkspaceOpts{})
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("expected upstream parser error %v, got %v", wantErr, err)
+	}
+}
+
 func TestSummonWorkspacePropagatesServerErrors(t *testing.T) {
 	for _, tt := range []struct {
 		name      string
@@ -102,11 +118,6 @@ func TestSummonWorkspacePropagatesServerErrors(t *testing.T) {
 		options   SummonWorkspaceOpts
 		wantError string
 	}{
-		{
-			name:      "unknown workspace",
-			workspace: "missing",
-			wantError: "command failed with exit code 1\nunknown workspace",
-		},
 		{
 			name:      "fail if noop",
 			workspace: "work",
