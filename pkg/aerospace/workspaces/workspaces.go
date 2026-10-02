@@ -26,6 +26,15 @@ type Workspace struct {
 	Workspace string `json:"workspace"`
 }
 
+// WorkspaceMonitor represents a workspace and the monitor it is assigned to.
+type WorkspaceMonitor struct {
+	// Workspace is the workspace name.
+	Workspace string `json:"workspace"`
+
+	// MonitorID is the 1-based ID of the monitor assigned to the workspace.
+	MonitorID int `json:"monitor-id"`
+}
+
 // Service provides methods to interact with workspaces in AeroSpaceWM.
 type Service struct {
 	client client.AeroSpaceConnection
@@ -109,6 +118,9 @@ type WorkspacesService interface {
 	// GetFocusedWorkspace returns the currently focused workspace.
 	GetFocusedWorkspace() (*Workspace, error)
 
+	// GetAllWorkspacesWithMonitors returns all workspaces, including empty ones, with their monitor IDs.
+	GetAllWorkspacesWithMonitors() ([]WorkspaceMonitor, error)
+
 	// MoveWindowToWorkspace moves the focused window to a specified workspace.
 	MoveWindowToWorkspace(args MoveWindowToWorkspaceArgs) error
 
@@ -168,6 +180,34 @@ func (s *Service) GetFocusedWorkspace() (*Workspace, error) {
 	}
 
 	return &workspaces[0], nil
+}
+
+// GetAllWorkspacesWithMonitors returns all workspaces, including empty ones, with their monitor IDs.
+//
+// It is equivalent to running the command:
+//
+//	aerospace list-workspaces --all --json --format "%{workspace} %{monitor-id}"
+//
+// Returns an error if the command fails or its output is malformed.
+func (s *Service) GetAllWorkspacesWithMonitors() ([]WorkspaceMonitor, error) {
+	response, err := s.client.SendCommand(
+		"list-workspaces",
+		[]string{
+			"--all",
+			"--json",
+			"--format",
+			"%{workspace} %{monitor-id}",
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var workspaces []WorkspaceMonitor
+	if err := json.Unmarshal([]byte(response.StdOut), &workspaces); err != nil {
+		return nil, fmt.Errorf("failed to parse workspace monitor mappings: %w", err)
+	}
+	return workspaces, nil
 }
 
 // MoveWindowToWorkspace moves the focused window to a specified workspace.
