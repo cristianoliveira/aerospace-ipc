@@ -24,6 +24,7 @@ This library expose wrapper methods to interact with aerospace, It covers the fu
  
     - Workspaces Service (`client.Workspaces()`)
         - Get focused workspace
+        - Get all workspaces with their monitor IDs
         - Move window to workspace
         - Move workspace back and forth (switch between focused and previous workspace)
         - Move workspace to monitor (direction-based, order-based, or pattern-based)
@@ -119,6 +120,14 @@ func main() {
         log.Fatalf("Failed to get focused monitor: %v", err)
     }
     fmt.Printf("Focused monitor: %s (ID %d)\n", monitor.MonitorName, monitor.MonitorID)
+    // List workspaces and the monitors they are assigned to
+    workspaceMonitors, err := client.Workspaces().GetAllWorkspacesWithMonitors()
+    if err != nil {
+        log.Fatalf("Failed to list workspaces with monitors: %v", err)
+    }
+    for _, item := range workspaceMonitors {
+        fmt.Printf("Workspace %s is on monitor %d\n", item.Workspace, item.MonitorID)
+    }
 
     // Move window to workspace
     err = client.Workspaces().MoveWindowToWorkspace(workspaces.MoveWindowToWorkspaceArgs{

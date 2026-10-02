@@ -40,6 +40,21 @@ func (m *MockWorkspacesService) EXPECT() *MockWorkspacesServiceMockRecorder {
 	return m.recorder
 }
 
+// GetAllWorkspacesWithMonitors mocks base method.
+func (m *MockWorkspacesService) GetAllWorkspacesWithMonitors() ([]workspaces.WorkspaceMonitor, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllWorkspacesWithMonitors")
+	ret0, _ := ret[0].([]workspaces.WorkspaceMonitor)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllWorkspacesWithMonitors indicates an expected call of GetAllWorkspacesWithMonitors.
+func (mr *MockWorkspacesServiceMockRecorder) GetAllWorkspacesWithMonitors() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllWorkspacesWithMonitors", reflect.TypeOf((*MockWorkspacesService)(nil).GetAllWorkspacesWithMonitors))
+}
+
 // GetFocusedWorkspace mocks base method.
 func (m *MockWorkspacesService) GetFocusedWorkspace() (*workspaces.Workspace, error) {
 	m.ctrl.T.Helper()
