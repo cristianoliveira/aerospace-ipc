@@ -3,6 +3,7 @@ package workspaces
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
 )
@@ -65,6 +66,18 @@ type MoveWindowToWorkspaceOpts struct {
 	NoStdin bool
 }
 
+// SummonWorkspaceArgs contains the workspace to move to the focused monitor.
+type SummonWorkspaceArgs struct {
+	// WorkspaceName identifies the workspace to summon to the focused monitor.
+	WorkspaceName string
+}
+
+// SummonWorkspaceOpts contains optional parameters for SummonWorkspace.
+type SummonWorkspaceOpts struct {
+	// FailIfNoop returns an error when the workspace is already visible on the focused monitor.
+	FailIfNoop bool
+}
+
 // MoveWorkspaceToMonitorArgs contains arguments for MoveWorkspaceToMonitor.
 // Exactly one of Direction, Order, or Patterns must be specified.
 type MoveWorkspaceToMonitorArgs struct {
@@ -109,6 +122,9 @@ type WorkspacesService interface {
 	// MoveWorkspaceToMonitor moves a workspace to a monitor.
 	// Supports three modes: direction-based (left|down|up|right), order-based (next|prev), or pattern-based.
 	MoveWorkspaceToMonitor(args MoveWorkspaceToMonitorArgs, opts MoveWorkspaceToMonitorOpts) error
+
+	// SummonWorkspace moves a workspace to the focused monitor and focuses it.
+	SummonWorkspace(args SummonWorkspaceArgs, opts SummonWorkspaceOpts) error
 }
 
 // NewService creates a new workspace service with the given AeroSpace client connection.
@@ -273,6 +289,37 @@ func (s *Service) MoveBackAndForth() error {
 		return fmt.Errorf("failed to switch workspace back and forth: %s", response.StdErr)
 	}
 
+	return nil
+}
+
+// SummonWorkspace moves the requested workspace to the focused monitor and focuses it.
+//
+// It is equivalent to running the command:
+//
+//	aerospace summon-workspace [--fail-if-noop] -- <workspace>
+//
+// A workspace already visible on the focused monitor is a no-op unless FailIfNoop is set.
+// Workspace names beginning with a dash are rejected by AeroSpace's command parser.
+//
+// Returns an error if the operation fails.
+func (s *Service) SummonWorkspace(args SummonWorkspaceArgs, opts SummonWorkspaceOpts) error {
+	if strings.TrimSpace(args.WorkspaceName) == "" {
+		return fmt.Errorf("workspace name must not be blank")
+	}
+
+	cmdArgs := make([]string, 0, 3)
+	if opts.FailIfNoop {
+		cmdArgs = append(cmdArgs, "--fail-if-noop")
+	}
+	cmdArgs = append(cmdArgs, "--", args.WorkspaceName)
+
+	response, err := s.client.SendCommand("summon-workspace", cmdArgs)
+	if err != nil {
+		return err
+	}
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to summon workspace: %s", response.StdErr)
+	}
 	return nil
 }
 
