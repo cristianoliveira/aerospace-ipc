@@ -56,6 +56,9 @@ func (s *Service) GetFocusedMonitor() (*Monitor, error) {
 	if err != nil {
 		return nil, err
 	}
+	if response.ExitCode != 0 {
+		return nil, fmt.Errorf("failed to get focused monitor:\n%s", response.StdErr)
+	}
 
 	monitors, err := parseMonitorList(response.StdOut)
 	if err != nil {
