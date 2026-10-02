@@ -6,6 +6,7 @@ import (
 	"github.com/cristianoliveira/aerospace-ipc/internal/exceptions"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/focus"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/layout"
+	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/monitors"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/windows"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/aerospace/workspaces"
 	"github.com/cristianoliveira/aerospace-ipc/pkg/client"
@@ -28,6 +29,9 @@ type Client interface {
 	// Layout returns the layout service for interacting with layout operations.
 	Layout() *layout.Service
 
+	// Monitors returns the monitor service for querying monitors.
+	Monitors() *monitors.Service
+
 	// Connection returns the AeroSpaceWM client.
 	//
 	// Returns the AeroSpaceConnection interface for further operations.
@@ -48,6 +52,7 @@ type AeroSpaceWM struct {
 	workspacesService *workspaces.Service
 	focusService      *focus.Service
 	layoutService     *layout.Service
+	monitorsService   *monitors.Service
 }
 
 // Windows returns the windows service for interacting with windows.
@@ -80,6 +85,14 @@ func (a *AeroSpaceWM) Layout() *layout.Service {
 		a.layoutService = layout.NewService(a.conn)
 	}
 	return a.layoutService
+}
+
+// Monitors returns the monitor service for querying monitors.
+func (a *AeroSpaceWM) Monitors() *monitors.Service {
+	if a.monitorsService == nil {
+		a.monitorsService = monitors.NewService(a.conn)
+	}
+	return a.monitorsService
 }
 
 // Connection returns the AeroSpaceConnection

@@ -30,6 +30,9 @@ This library expose wrapper methods to interact with aerospace, It covers the fu
         - Move workspace to monitor (direction-based, order-based, or pattern-based)
         - Summon a workspace to the focused monitor
 
+    - Monitors Service (`client.Monitors()`)
+        - Get focused monitor
+
     - Focus Service (`client.Focus()`)
         - Set focus by window ID
         - Set focus by direction (left, down, up, right)
@@ -111,6 +114,12 @@ func main() {
     }
     fmt.Printf("Focused workspace: %s\n", workspace.Workspace)
 
+    // Query the focused monitor
+    monitor, err := client.Monitors().GetFocusedMonitor()
+    if err != nil {
+        log.Fatalf("Failed to get focused monitor: %v", err)
+    }
+    fmt.Printf("Focused monitor: %s (ID %d)\n", monitor.MonitorName, monitor.MonitorID)
     // List workspaces and the monitors they are assigned to
     workspaceMonitors, err := client.Workspaces().GetAllWorkspacesWithMonitors()
     if err != nil {
