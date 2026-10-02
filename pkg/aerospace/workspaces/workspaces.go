@@ -207,6 +207,17 @@ func (s *Service) GetAllWorkspacesWithMonitors() ([]WorkspaceMonitor, error) {
 	if err := json.Unmarshal([]byte(response.StdOut), &workspaces); err != nil {
 		return nil, fmt.Errorf("failed to parse workspace monitor mappings: %w", err)
 	}
+	if workspaces == nil {
+		return nil, fmt.Errorf("failed to parse workspace monitor mappings: expected a JSON array")
+	}
+	for i, mapping := range workspaces {
+		if strings.TrimSpace(mapping.Workspace) == "" {
+			return nil, fmt.Errorf("invalid workspace monitor mapping at index %d: workspace name is blank", i)
+		}
+		if mapping.MonitorID <= 0 {
+			return nil, fmt.Errorf("invalid workspace monitor mapping at index %d: monitor ID must be positive", i)
+		}
+	}
 	return workspaces, nil
 }
 
