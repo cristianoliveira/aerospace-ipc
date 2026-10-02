@@ -121,6 +121,9 @@ type WorkspacesService interface {
 	// GetAllWorkspacesWithMonitors returns all workspaces, including empty ones, with their monitor IDs.
 	GetAllWorkspacesWithMonitors() ([]WorkspaceMonitor, error)
 
+	// FocusWorkspace focuses the named workspace.
+	FocusWorkspace(workspaceName string) error
+
 	// MoveWindowToWorkspace moves the focused window to a specified workspace.
 	MoveWindowToWorkspace(args MoveWindowToWorkspaceArgs) error
 
@@ -219,6 +222,24 @@ func (s *Service) GetAllWorkspacesWithMonitors() ([]WorkspaceMonitor, error) {
 		}
 	}
 	return workspaces, nil
+}
+
+// FocusWorkspace focuses the named workspace.
+//
+// It is equivalent to running the command:
+//
+//	aerospace workspace -- <workspace-name>
+//
+// AeroSpace validates the workspace name. Its command and connection errors are returned.
+func (s *Service) FocusWorkspace(workspaceName string) error {
+	response, err := s.client.SendCommand("workspace", []string{"--", workspaceName})
+	if err != nil {
+		return err
+	}
+	if response.ExitCode != 0 {
+		return fmt.Errorf("failed to focus workspace: %s", response.StdErr)
+	}
+	return nil
 }
 
 // MoveWindowToWorkspace moves the focused window to a specified workspace.
