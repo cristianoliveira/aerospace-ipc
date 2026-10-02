@@ -298,7 +298,9 @@ func (s *Service) MoveBackAndForth() error {
 //
 //	aerospace summon-workspace [--fail-if-noop] -- <workspace>
 //
-// A workspace already visible on the focused monitor is a no-op unless FailIfNoop is set.
+// The summoned workspace becomes focused. If it was visible on another monitor, AeroSpace
+// replaces it there with a stub workspace. A workspace already visible on the focused monitor
+// is a no-op unless FailIfNoop is set.
 // Workspace names beginning with a dash are rejected by AeroSpace's command parser.
 //
 // Returns an error if the operation fails.

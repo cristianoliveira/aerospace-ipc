@@ -15,6 +15,7 @@ func TestSummonWorkspace(t *testing.T) {
 		workspace  string
 		failIfNoop bool
 		wantArgs   []string
+		stderr     string
 	}{
 		{
 			name:      "workspace name is separated from command flags",
@@ -27,6 +28,12 @@ func TestSummonWorkspace(t *testing.T) {
 			failIfNoop: true,
 			wantArgs:   []string{"--fail-if-noop", "--", "work"},
 		},
+		{
+			name:      "workspace names with spaces stay a single argument and stderr tip is not failure",
+			workspace: "my workspace",
+			wantArgs:  []string{"--", "my workspace"},
+			stderr:    "Workspace is already visible; use --fail-if-noop to fail",
+		},
 	}
 
 	for _, tt := range tests {
@@ -37,7 +44,7 @@ func TestSummonWorkspace(t *testing.T) {
 
 			mockConn.EXPECT().
 				SendCommand("summon-workspace", tt.wantArgs).
-				Return(&client.Response{}, nil)
+				Return(&client.Response{StdErr: tt.stderr}, nil)
 
 			err := service.SummonWorkspace(
 				SummonWorkspaceArgs{WorkspaceName: tt.workspace},
@@ -84,6 +91,34 @@ func TestSummonWorkspaceDashLeadingNameUsesUpstreamParserValidation(t *testing.T
 	err := service.SummonWorkspace(SummonWorkspaceArgs{WorkspaceName: "-work"}, SummonWorkspaceOpts{})
 	if err == nil || err.Error() != "failed to summon workspace: Workspace names starting with dash are disallowed" {
 		t.Fatalf("expected upstream parser error, got %v", err)
+	}
+}
+
+func TestSummonWorkspacePropagatesFailIfNoopAndMonitorAssignmentErrors(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		stderr string
+	}{
+		{name: "noop", stderr: "workspace is already visible"},
+		{name: "forced monitor assignment", stderr: "workspace-to-monitor-force-assignment doesn't allow it"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+			service := NewService(mockConn)
+
+			mockConn.EXPECT().
+				SendCommand("summon-workspace", []string{"--fail-if-noop", "--", "work"}).
+				Return(&client.Response{ExitCode: 1, StdErr: tt.stderr}, nil)
+
+			err := service.SummonWorkspace(
+				SummonWorkspaceArgs{WorkspaceName: "work"},
+				SummonWorkspaceOpts{FailIfNoop: true},
+			)
+			if err == nil || err.Error() != "failed to summon workspace: "+tt.stderr {
+				t.Fatalf("expected server error to be propagated, got %v", err)
+			}
+		})
 	}
 }
 
