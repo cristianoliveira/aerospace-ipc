@@ -38,6 +38,40 @@ func TestGetFocusedMonitor(t *testing.T) {
 		}
 	})
 
+	t.Run("preserves nonzero response stderr", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+		service := NewService(mockConn)
+		const serverMessage = "failed to query focused monitor"
+		mockConn.EXPECT().
+			SendCommand("list-monitors", []string{"--focused", "--json", "--format", "%{monitor-id} %{monitor-name}"}).
+			Return(&client.Response{ExitCode: 1, StdErr: serverMessage, StdOut: "[]"}, nil)
+
+		got, err := service.GetFocusedMonitor()
+		if err == nil || !strings.Contains(err.Error(), serverMessage) {
+			t.Fatalf("expected error containing %q, got monitor %+v and error %v", serverMessage, got, err)
+		}
+	})
+
+	t.Run("ignores successful informational stderr", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)
+		service := NewService(mockConn)
+		mockConn.EXPECT().
+			SendCommand("list-monitors", []string{"--focused", "--json", "--format", "%{monitor-id} %{monitor-name}"}).
+			Return(&client.Response{
+				ExitCode: 0,
+				StdErr:   "monitor already focused",
+				StdOut:   `[{"monitor-id":2,"monitor-name":"external"}]`,
+			}, nil)
+
+		if got, err := service.GetFocusedMonitor(); err != nil {
+			t.Fatalf("informational stderr should not be an error: %v", err)
+		} else if got.MonitorID != 2 {
+			t.Fatalf("expected focused monitor ID 2, got %+v", got)
+		}
+	})
+
 	t.Run("returns no-focused-monitor error for empty array", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mockConn := mock_client.NewMockAeroSpaceConnection(ctrl)

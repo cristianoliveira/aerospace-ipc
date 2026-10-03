@@ -33,6 +33,7 @@ This library expose wrapper methods to interact with aerospace, It covers the fu
 
     - Monitors Service (`client.Monitors()`)
         - Get focused monitor
+        - Get all monitors
 
     - Focus Service (`client.Focus()`)
         - Focus monitor by AeroSpace ordinal
@@ -122,6 +123,15 @@ func main() {
         log.Fatalf("Failed to get focused monitor: %v", err)
     }
     fmt.Printf("Focused monitor: %s (ID %d)\n", monitor.MonitorName, monitor.MonitorID)
+
+    // List all monitors
+    allMonitors, err := client.Monitors().GetAllMonitors()
+    if err != nil {
+        log.Fatalf("Failed to list monitors: %v", err)
+    }
+    for _, monitor := range allMonitors {
+        fmt.Printf("Monitor %d: %s\n", monitor.MonitorID, monitor.MonitorName)
+    }
 
     // List workspaces and the monitors they are assigned to
     workspaceMonitors, err := client.Workspaces().GetAllWorkspacesWithMonitors()

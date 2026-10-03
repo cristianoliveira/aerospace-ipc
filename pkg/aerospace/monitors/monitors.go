@@ -21,6 +21,9 @@ type Monitor struct {
 type MonitorsService interface {
 	// GetFocusedMonitor returns the currently focused monitor.
 	GetFocusedMonitor() (*Monitor, error)
+
+	// GetAllMonitors returns all monitors.
+	GetAllMonitors() ([]Monitor, error)
 }
 
 // Service provides methods to query monitors in AeroSpaceWM.
@@ -53,13 +56,13 @@ func (s *Service) GetFocusedMonitor() (*Monitor, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var monitors []Monitor
-	if err := json.Unmarshal([]byte(response.StdOut), &monitors); err != nil {
-		return nil, fmt.Errorf("failed to parse focused monitor: %w", err)
+	if response.ExitCode != 0 {
+		return nil, fmt.Errorf("failed to get focused monitor:\n%s", response.StdErr)
 	}
-	if monitors == nil {
-		return nil, fmt.Errorf("failed to parse focused monitor: expected a JSON array")
+
+	monitors, err := parseMonitorList(response.StdOut)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse focused monitor: %w", err)
 	}
 	if len(monitors) == 0 {
 		return nil, fmt.Errorf("no focused monitor found")
@@ -68,13 +71,61 @@ func (s *Service) GetFocusedMonitor() (*Monitor, error) {
 		return nil, fmt.Errorf("expected one focused monitor, got %d", len(monitors))
 	}
 
-	monitor := monitors[0]
-	if monitor.MonitorID <= 0 {
-		return nil, fmt.Errorf("invalid focused monitor: monitor ID must be positive")
+	return &monitors[0], nil
+}
+
+// GetAllMonitors returns all monitors in AeroSpace's current order.
+//
+// It is equivalent to running the command:
+//
+//	aerospace list-monitors --json --format "%{monitor-id} %{monitor-name}"
+//
+// An empty array is a valid empty inventory. Malformed or incomplete monitor data is rejected.
+func (s *Service) GetAllMonitors() ([]Monitor, error) {
+	response, err := s.client.SendCommand(
+		"list-monitors",
+		[]string{
+			"--json",
+			"--format",
+			"%{monitor-id} %{monitor-name}",
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
-	if strings.TrimSpace(monitor.MonitorName) == "" {
-		return nil, fmt.Errorf("invalid focused monitor: monitor name is blank")
+	if response.ExitCode != 0 {
+		return nil, fmt.Errorf("failed to list monitors:\n%s", response.StdErr)
 	}
 
-	return &monitor, nil
+	monitors, err := parseMonitorList(response.StdOut)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse monitors: %w", err)
+	}
+	return monitors, nil
+}
+
+func parseMonitorList(output string) ([]Monitor, error) {
+	var monitors []Monitor
+	if err := json.Unmarshal([]byte(output), &monitors); err != nil {
+		return nil, err
+	}
+	if monitors == nil {
+		return nil, fmt.Errorf("expected a JSON array")
+	}
+
+	seenIDs := make(map[int]struct{}, len(monitors))
+	for i, monitor := range monitors {
+		if monitor.MonitorID <= 0 {
+			return nil, fmt.Errorf("monitor at index %d has nonpositive ID %d", i, monitor.MonitorID)
+		}
+		if strings.TrimSpace(monitor.MonitorName) == "" {
+			return nil, fmt.Errorf("monitor at index %d has a blank name", i)
+		}
+		if _, exists := seenIDs[monitor.MonitorID]; exists {
+			return nil, fmt.Errorf("duplicate monitor ID %d", monitor.MonitorID)
+		}
+		seenIDs[monitor.MonitorID] = struct{}{}
+	}
+
+	return monitors, nil
 }
